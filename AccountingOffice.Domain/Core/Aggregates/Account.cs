@@ -44,8 +44,8 @@ public abstract class Account<TId> : IMultiTenantEntity<TId>
         if (EqualityComparer<TId>.Default.Equals(tenantId, default!))
             return Result.Failure("TenantId é obrigatório.");
 
-        if (Enum.IsDefined(typeof(AccountStatus),Status))
-         return Result.Failure("Status da conta inválido.");
+        if (!Enum.IsDefined(typeof(AccountStatus), Status))
+            return Result.Failure("Status da conta inválido.");
 
         if (string.IsNullOrWhiteSpace(description))
             return Result.Failure("A descrição não pode ser nula ou vazia." );
@@ -60,9 +60,14 @@ public abstract class Account<TId> : IMultiTenantEntity<TId>
             throw new ArgumentNullException(nameof(relatedParty));
 
         // Validação: RelatedParty deve pertencer ao mesmo tenant
-        // Como Person sempre usa Guid para TenantId e Account<TId> quando TId=Guid também usa Guid
-        if (tenantId is Guid accountTenantId && !accountTenantId.Equals(relatedParty.TenantId))
-            return Result.Failure("A pessoa relacionada deve pertencer à mesma empresa.");
+        // Como Person sempre usa Guid para TenantId, precisamos comparar corretamente
+        // Quando TId = Guid, tenantId já é Guid, então podemos fazer a comparação direta
+        if (typeof(TId) == typeof(Guid))
+        {
+            var accountTenantId = (Guid)(object)tenantId!;
+            if (!accountTenantId.Equals(relatedParty.TenantId))
+                return Result.Failure("A pessoa relacionada deve pertencer à mesma empresa.");
+        }
 
         return Result.Success();
     }

@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="AccountingOffice.Domain/AccountingOffice.Domain.csproj" />
+  <Project Path="AccountOffice.Tests/AccountOffice.Tests.csproj" Id="d459bb09-d1c3-4072-beea-d5acc9284a0f" />
 </Solution>
