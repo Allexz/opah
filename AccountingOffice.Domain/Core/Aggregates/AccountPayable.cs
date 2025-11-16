@@ -1,4 +1,5 @@
-﻿using AccountingOffice.Domain.Core.Enums;
+﻿using AccountingOffice.Domain.Core.Common;
+using AccountingOffice.Domain.Core.Enums;
 using AccountingOffice.Domain.Core.ValueObjects;
 
 namespace AccountingOffice.Domain.Core.Aggregates;
@@ -6,7 +7,84 @@ namespace AccountingOffice.Domain.Core.Aggregates;
 public class AccountPayable : Account<Guid>
 {
 
-    public AccountPayable(
+    #region Propriedades
+    public PaymentMethod PayMethod { get; private set; }
+    public DateTime? PaymentDate { get; private set; }
+
+    private List<Installment> _installments = new();
+    public IReadOnlyCollection<Installment> Installments => _installments.AsReadOnly();
+
+    #endregion
+
+    #region Construtores
+    /// <summary>
+    /// Construtor privado para criação de uma conta a pagar.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="tenantId"></param>
+    /// <param name="description"></param>
+    /// <param name="ammount"></param>
+    /// <param name="issueDate"></param>
+    /// <param name="dueDate"></param>
+    /// <param name="status"></param>
+    /// <param name="supplier"></param>
+    /// <param name="payMethod"></param>
+    /// <param name="paymentDate"></param>
+    private AccountPayable(
+     Guid id,
+     Guid tenantId,
+     string description,
+     decimal ammount,
+     DateTime issueDate,
+     DateTime dueDate,
+     AccountStatus status,
+     Person<Guid> supplier,
+     PaymentMethod payMethod,
+     DateTime? paymentDate = null)
+     : base(id, tenantId, description, ammount, issueDate, dueDate, status, supplier)
+    {
+        PayMethod = payMethod;
+        PaymentDate = paymentDate;
+    }
+    #endregion
+
+    #region Validação
+    /// <summary>
+    /// Validação dos parâmetros específicos para criação de uma conta a pagar.
+    /// </summary>
+    /// <param name="paymentDate"></param>
+    /// <param name="status"></param>
+    /// <returns></returns>
+    private static Result ValidateCreationParameters(DateTime? paymentDate, AccountStatus status)
+    {
+        if (paymentDate.HasValue && status != AccountStatus.Paid)
+            return Result.Failure("A data de pagamento só pode ser se o status for pago .");
+
+        if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
+            return Result.Failure("Payment date cannot be in the future.");
+
+        return Result.Success();
+    }
+
+    #endregion
+
+    #region Alterações de estado
+
+    /// <summary>
+    /// Fábrica para criação de uma conta a pagar.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="tenantId"></param>
+    /// <param name="description"></param>
+    /// <param name="ammount"></param>
+    /// <param name="issueDate"></param>
+    /// <param name="dueDate"></param>
+    /// <param name="status"></param>
+    /// <param name="supplier"></param>
+    /// <param name="payMethod"></param>
+    /// <param name="paymentDate"></param>
+    /// <returns></returns>
+    public static Result<AccountPayable> Create(
         Guid id,
         Guid tenantId,
         string description,
@@ -17,39 +95,54 @@ public class AccountPayable : Account<Guid>
         Person<Guid> supplier,
         PaymentMethod payMethod,
         DateTime? paymentDate = null)
-        : base(id, tenantId, description, ammount, issueDate, dueDate, status, supplier)
     {
-        if (paymentDate.HasValue && status != AccountStatus.Paid)
-            throw new ArgumentException("Payment date can only be set when status is Paid.", nameof(paymentDate));
+        Result? validationResult = ValidateAccountParameters(tenantId,
+                                                             description,
+                                                             ammount,
+                                                             issueDate,
+                                                             dueDate,
+                                                             status,
+                                                             supplier);
+        if (!validationResult.IsSuccess)
+            return Result<AccountPayable>.Failure(validationResult.Error);
 
-        if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            throw new ArgumentException("Payment date cannot be in the future.", nameof(paymentDate));
+        validationResult = ValidateCreationParameters(paymentDate, status);
+        if (!validationResult.IsSuccess)
+            return Result<AccountPayable>.Failure(validationResult.Error);
 
-        PayMethod = payMethod;
-        PaymentDate = paymentDate;
+        AccountPayable accountPayable = new AccountPayable(
+            id,
+            tenantId,
+            description,
+            ammount,
+            issueDate,
+            dueDate,
+            status,
+            supplier,
+            payMethod,
+            paymentDate);
+
+        return Result<AccountPayable>.Success(accountPayable);
     }
-
-    public PaymentMethod PayMethod { get; private set; }
-    public DateTime? PaymentDate { get; private set; }
-
-    private  List<Installment> _installments = new();
-
-    public IReadOnlyCollection<Installment> Installments => _installments.AsReadOnly();
-
-    public void AddInstallment(Installment installment)
+    public Result AddInstallment(Installment installment)
     {
         if (installment == null)
-            throw new ArgumentNullException(nameof(installment));
+           return Result.Failure("Parcela não pode ser nula");
 
         if (_installments.Any(i => i.InstallmentNumber == installment.InstallmentNumber))
-            throw new ArgumentException($"Installment with number {installment.InstallmentNumber} already exists.", nameof(installment));
+            return Result.Failure($"Parcela com o identificador {installment.InstallmentNumber} já existe.");
 
         if (installment.DueDate < IssueDate)
-            throw new ArgumentException("Installment due date cannot be before account issue date.", nameof(installment));
+            return Result.Failure("Data de vencimento da parcela não pode ser anterior a data de emissão da conta.");
 
         if (installment.DueDate > DueDate)
-            throw new ArgumentException("Installment due date cannot be after account due date.", nameof(installment));
+            return Result.Failure("Data de vencimento da parcela não pode ser após a data de vencimento da conta.");
 
         _installments.Add(installment);
+
+        return Result.Success();
     }
+
+    #endregion
+
 }
