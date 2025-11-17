@@ -1,6 +1,5 @@
 ﻿using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
-using AccountingOffice.Domain.Core.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace AccountingOffice.Application.UseCases.Legal.Commands;
@@ -10,6 +9,21 @@ namespace AccountingOffice.Application.UseCases.Legal.Commands;
 /// </summary>
 public sealed record CreateLegalPersonCommand : ICommand<Result<Guid>>
 {
+    public CreateLegalPersonCommand(Guid tenantId,
+                                    string name,
+                                    string document,
+                                    string email,
+                                    string phoneNumber,
+                                    string legalName)
+    {
+        TenantId = tenantId;
+        Name = name;
+        Document = document;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        LegalName = legalName;
+    }
+
     /// <summary>
     /// Identificador do tenant/empresa à qual a pessoa pertence.
     /// </summary>

@@ -9,6 +9,27 @@ namespace AccountingOffice.Application.UseCases.Legal.Commands;
 /// </summary>
 public sealed record UpdateLegalPersonCommand : ICommand<Result<bool>>
 {
+    public UpdateLegalPersonCommand(Guid tenantId,
+                                    Guid id,
+                                    string name = "",
+                                    string email = "",
+                                    string phoneNumber = "",
+                                    string legalName = "")
+    {
+        TenantId = tenantId;
+        Id = id;
+        Name = name;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        LegalName = legalName;
+    }
+
+    public bool Hasname => !string.IsNullOrWhiteSpace(Name);
+    public bool HasEmail => !string.IsNullOrWhiteSpace(Email);
+    public bool HasPhoneNumber => !string.IsNullOrWhiteSpace(PhoneNumber);
+    public bool HasLegalName => !string.IsNullOrWhiteSpace(LegalName);
+
+
     /// <summary>
     /// Identificador do Tenant.
     /// </summary>

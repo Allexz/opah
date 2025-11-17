@@ -5,8 +5,9 @@ using AccountingOffice.Application.Interfaces.Repositories;
 using AccountingOffice.Application.UseCases.Legal.Commands;
 using AccountingOffice.Domain.Core.Aggregates;
 using AccountingOffice.Domain.Core.Common;
+using System.Text;
 
-namespace AccountingOffice.Application.UseCases.Legal.Handlers;
+namespace AccountingOffice.Application.UseCases.Legal.CommandHandler;
 
 public class LegalPersonCommandHandler :
     ICommandHandler<CreateLegalPersonCommand, Result<Guid>>,
@@ -45,26 +46,42 @@ public class LegalPersonCommandHandler :
         LegalPerson? legalPerson = await _legalPersonQuery.GetByIdAsync(command.Id, command.TenantId);
 
         if (legalPerson is null)
-        {
             return Result<bool>.Failure("Pessoa jurídica não encontrada.");
-        }
 
-        if (legalPerson.Phone != command.PhoneNumber) legalPerson.ChangePhone(command.PhoneNumber);
+        var errors = new List<string>();
 
-        if (legalPerson.Email != command.Email) legalPerson.ChangeEmail(command.Email);
-
-        if (legalPerson.Name != command.Name) legalPerson.ChangeName(command.Name);
-
-        if (legalPerson.LegalName != command.LegalName)
+        if (command.HasPhoneNumber)
         {
-            DomainResult changeResult = legalPerson.ChangeLegalName(command.LegalName);
-            if (!changeResult.IsSuccess)
-                return Result<bool>.Failure(changeResult.Error);
+            var result = legalPerson.ChangePhone(command.PhoneNumber);
+            if (!result.IsSuccess) errors.Add(result.Error);
         }
+
+        if (command.HasEmail)
+        {
+            var result = legalPerson.ChangeEmail(command.Email);
+            if (!result.IsSuccess) errors.Add(result.Error);
+        }
+
+        if (command.Hasname)
+        {
+            var result = legalPerson.ChangeName(command.Name);
+            if (!result.IsSuccess) errors.Add(result.Error);
+        }
+
+        if (command.HasLegalName)
+        {
+            var result = legalPerson.ChangeLegalName(command.LegalName);
+            if (!result.IsSuccess) errors.Add(result.Error);
+        }
+
+        if (errors.Any())
+            return Result<bool>.Failure(string.Join("|", errors.Select(x => x)));
 
         await _legalPersonRepository.UpdateAsync(legalPerson);
+
         return Result<bool>.Success(true);
     }
+
 
     public async Task<Result<bool>> Handle(DeleteLegalPersonCommand command, CancellationToken cancellationToken)
     {

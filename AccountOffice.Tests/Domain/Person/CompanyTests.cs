@@ -259,7 +259,7 @@ public class CompanyTests
         var newName = _faker.Company.CompanyName();
 
         // Act
-        var result = company.UpdateName(newName);
+        var result = company.ChangeName(newName);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -284,7 +284,7 @@ public class CompanyTests
         var originalName = company.Name;
 
         // Act
-        var result = company.UpdateName(invalidName!);
+        var result = company.ChangeName(invalidName!);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -306,7 +306,7 @@ public class CompanyTests
         var nameWithSpaces = "  " + _faker.Company.CompanyName() + "  ";
 
         // Act
-        var result = company.UpdateName(nameWithSpaces);
+        var result = company.ChangeName(nameWithSpaces);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -327,7 +327,7 @@ public class CompanyTests
         var newEmail = _faker.Internet.Email();
 
         // Act
-        var result = company.UpdateEmail(newEmail);
+        var result = company.ChangeEmail(newEmail);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -352,7 +352,7 @@ public class CompanyTests
         var originalEmail = company.Email;
 
         // Act
-        var result = company.UpdateEmail(invalidEmail!);
+        var result = company.ChangeEmail(invalidEmail!);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -374,7 +374,7 @@ public class CompanyTests
         var emailWithSpaces = "  " + _faker.Internet.Email() + "  ";
 
         // Act
-        var result = company.UpdateEmail(emailWithSpaces);
+        var result = company.ChangeEmail(emailWithSpaces);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -395,7 +395,7 @@ public class CompanyTests
         var newPhone = _faker.Phone.PhoneNumber();
 
         // Act
-        var result = company.UpdatePhone(newPhone);
+        var result = company.ChangePhone(newPhone);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -420,7 +420,7 @@ public class CompanyTests
         var originalPhone = company.Phone;
 
         // Act
-        var result = company.UpdatePhone(invalidPhone!);
+        var result = company.ChangePhone(invalidPhone!);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -442,7 +442,7 @@ public class CompanyTests
         var phoneWithSpaces = "  " + _faker.Phone.PhoneNumber() + "  ";
 
         // Act
-        var result = company.UpdatePhone(phoneWithSpaces);
+        var result = company.ChangePhone(phoneWithSpaces);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -505,8 +505,8 @@ public class CompanyTests
         var secondName = _faker.Company.CompanyName();
 
         // Act
-        company.UpdateName(firstName);
-        company.UpdateName(secondName);
+        company.ChangeName(firstName);
+        company.ChangeName(secondName);
 
         // Assert
         Assert.Equal(secondName.Trim(), company.Name);
@@ -527,8 +527,8 @@ public class CompanyTests
         var secondEmail = _faker.Internet.Email();
 
         // Act
-        company.UpdateEmail(firstEmail);
-        company.UpdateEmail(secondEmail);
+        company.ChangeEmail(firstEmail);
+        company.ChangeEmail(secondEmail);
 
         // Assert
         Assert.Equal(secondEmail.Trim(), company.Email);
@@ -549,8 +549,8 @@ public class CompanyTests
         var secondPhone = _faker.Phone.PhoneNumber();
 
         // Act
-        company.UpdatePhone(firstPhone);
-        company.UpdatePhone(secondPhone);
+        company.ChangePhone(firstPhone);
+        company.ChangePhone(secondPhone);
 
         // Assert
         Assert.Equal(secondPhone.Trim(), company.Phone);
@@ -688,15 +688,15 @@ public class CompanyTests
         var originalPhone = company.Phone;
 
         // Act & Assert - Tentar atualizar com valores inválidos
-        var nameResult = company.UpdateName("");
+        var nameResult = company.ChangeName("");
         Assert.True(nameResult.IsFailure);
         Assert.Equal(originalName, company.Name);
 
-        var emailResult = company.UpdateEmail("");
+        var emailResult = company.ChangeEmail("");
         Assert.True(emailResult.IsFailure);
         Assert.Equal(originalEmail, company.Email);
 
-        var phoneResult = company.UpdatePhone("");
+        var phoneResult = company.ChangePhone("");
         Assert.True(phoneResult.IsFailure);
         Assert.Equal(originalPhone, company.Phone);
     }

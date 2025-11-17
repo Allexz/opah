@@ -1,6 +1,5 @@
 ﻿using AccountingOffice.Domain.Core.Common;
 using AccountingOffice.Domain.Core.Enums;
-using AccountingOffice.Domain.Core.ValueObjects;
 
 namespace AccountingOffice.Domain.Core.Aggregates;
 
@@ -8,11 +7,7 @@ public class AccountPayable : Account<Guid>
 {
 
     #region Propriedades
-    public PaymentMethod PayMethod { get; private set; }
     public DateTime? PaymentDate { get; private set; }
-
-    private List<Installment> _installments = new();
-    public IReadOnlyCollection<Installment> Installments => _installments.AsReadOnly();
 
     #endregion
 
@@ -30,17 +25,16 @@ public class AccountPayable : Account<Guid>
     /// <param name="supplier"></param>
     /// <param name="payMethod"></param>
     /// <param name="paymentDate"></param>
-    private AccountPayable(
-     Guid id,
-     Guid tenantId,
-     string description,
-     decimal ammount,
-     DateTime issueDate,
-     DateTime dueDate,
-     AccountStatus status,
-     Person<Guid> supplier,
-     PaymentMethod payMethod,
-     DateTime? paymentDate = null)
+    private AccountPayable(Guid id,
+                           Guid tenantId,
+                           string description,
+                           decimal ammount,
+                           DateTime issueDate,
+                           DateTime dueDate,
+                           AccountStatus status,
+                           Person<Guid> supplier,
+                           PaymentMethod payMethod,
+                           DateTime? paymentDate = null)
      : base(id, tenantId, description, ammount, issueDate, dueDate, status, supplier)
     {
         PayMethod = payMethod;
@@ -55,13 +49,17 @@ public class AccountPayable : Account<Guid>
     /// <param name="paymentDate"></param>
     /// <param name="status"></param>
     /// <returns></returns>
-    private static DomainResult ValidateCreationParameters(DateTime? paymentDate, AccountStatus status)
+    private static DomainResult ValidatePayableParameters(DateTime? paymentDate, AccountStatus status)
     {
+        List<string> errors = new();
         if (paymentDate.HasValue && status != AccountStatus.Paid)
-            return DomainResult.Failure("A data de pagamento só pode ser se o status for pago .");
+            errors.Add("A data de pagamento só pode ser se o status for pago .");
 
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return DomainResult.Failure("Payment date cannot be in the future.");
+            errors.Add("Payment date cannot be in the future.");
+
+        if (errors.Any())
+            return DomainResult.Failure(string.Join("|", errors));
 
         return DomainResult.Success();
     }
@@ -84,17 +82,16 @@ public class AccountPayable : Account<Guid>
     /// <param name="payMethod"></param>
     /// <param name="paymentDate"></param>
     /// <returns></returns>
-    public static DomainResult<AccountPayable> Create(
-        Guid id,
-        Guid tenantId,
-        string description,
-        decimal ammount,
-        DateTime issueDate,
-        DateTime dueDate,
-        AccountStatus status,
-        Person<Guid> supplier,
-        PaymentMethod payMethod,
-        DateTime? paymentDate = null)
+    public static DomainResult<AccountPayable> Create(Guid id,
+                                                      Guid tenantId,
+                                                      string description,
+                                                      decimal ammount,
+                                                      DateTime issueDate,
+                                                      DateTime dueDate,
+                                                      AccountStatus status,
+                                                      Person<Guid> supplier,
+                                                      PaymentMethod payMethod,
+                                                      DateTime? paymentDate = null)
     {
         DomainResult? validationResult = ValidateAccountParameters(tenantId,
                                                              description,
@@ -106,7 +103,7 @@ public class AccountPayable : Account<Guid>
         if (!validationResult.IsSuccess)
             return DomainResult<AccountPayable>.Failure(validationResult.Error);
 
-        validationResult = ValidateCreationParameters(paymentDate, status);
+        validationResult = ValidatePayableParameters(paymentDate, status);
         if (!validationResult.IsSuccess)
             return DomainResult<AccountPayable>.Failure(validationResult.Error);
 
@@ -124,24 +121,7 @@ public class AccountPayable : Account<Guid>
 
         return DomainResult<AccountPayable>.Success(accountPayable);
     }
-    public DomainResult AddInstallment(Installment installment)
-    {
-        if (installment == null)
-           return DomainResult.Failure("Parcela não pode ser nula");
-
-        if (_installments.Any(i => i.InstallmentNumber == installment.InstallmentNumber))
-            return DomainResult.Failure($"Parcela com o identificador {installment.InstallmentNumber} já existe.");
-
-        if (installment.DueDate < IssueDate)
-            return DomainResult.Failure("Data de vencimento da parcela não pode ser anterior a data de emissão da conta.");
-
-        if (installment.DueDate > DueDate)
-            return DomainResult.Failure("Data de vencimento da parcela não pode ser após a data de vencimento da conta.");
-
-        _installments.Add(installment);
-
-        return DomainResult.Success();
-    }
+    
 
     #endregion
 

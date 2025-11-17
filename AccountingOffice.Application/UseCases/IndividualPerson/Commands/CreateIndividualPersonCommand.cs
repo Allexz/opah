@@ -9,6 +9,21 @@ namespace AccountingOffice.Application.UseCases.Individual.Commands;
 /// </summary>
 public sealed record CreateIndividualPersonCommand : ICommand<Result<Guid>>
 {
+    public CreateIndividualPersonCommand(Guid tenantId,
+                                         string name,
+                                         string document,
+                                         string email,
+                                         string phoneNumber,
+                                         int maritalStatus)
+    {
+        TenantId = tenantId;
+        Name = name;
+        Document = document;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        MaritalStatus = maritalStatus;
+    }
+
     /// <summary>
     /// Identificador do tenant/empresa à qual a pessoa pertence.
     /// </summary>
@@ -37,5 +52,5 @@ public sealed record CreateIndividualPersonCommand : ICommand<Result<Guid>>
     /// <summary>
     /// Estado civil da pessoa física.
     /// </summary>
-    public MaritalStatus MaritalStatus { get; init; }
+    public int MaritalStatus { get; init; }
 }

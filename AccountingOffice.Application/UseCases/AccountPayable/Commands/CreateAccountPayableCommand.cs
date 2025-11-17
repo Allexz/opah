@@ -1,6 +1,5 @@
 ﻿using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
-using AccountingOffice.Domain.Core.Enums;
 
 namespace AccountingOffice.Application.UseCases.AccountPay.Commands;
 
@@ -9,6 +8,26 @@ namespace AccountingOffice.Application.UseCases.AccountPay.Commands;
 /// </summary>
 public sealed record CreateAccountPayableCommand : ICommand<Result<Guid>>
 {
+    public CreateAccountPayableCommand(Guid tenantId,
+                                       Guid supplierId,
+                                       string description,
+                                       decimal ammount,
+                                       DateTime dueDate,
+                                       int status,
+                                       int payMethod,
+                                       DateTime? paymentDate = null)
+    {
+        TenantId = tenantId;
+        Description = description;
+        Ammount = ammount;
+        IssueDate = DateTime.UtcNow;
+        DueDate = dueDate;
+        Status = status;
+        SupplierId = supplierId;
+        PayMethod = payMethod;
+        PaymentDate = paymentDate ;
+    }
+
     /// <summary>
     /// Identificador do tenant/empresa à qual a conta pertence.
     /// </summary>
@@ -37,7 +56,7 @@ public sealed record CreateAccountPayableCommand : ICommand<Result<Guid>>
     /// <summary>
     /// Status da conta a pagar.
     /// </summary>
-    public AccountStatus Status { get; init; }
+    public int Status { get; init; }
 
     /// <summary>
     /// Identificador do fornecedor (Person) relacionado à conta.
@@ -47,7 +66,7 @@ public sealed record CreateAccountPayableCommand : ICommand<Result<Guid>>
     /// <summary>
     /// Método de pagamento.
     /// </summary>
-    public PaymentMethod PayMethod { get; init; }
+    public int PayMethod { get; init; }
 
     /// <summary>
     /// Data de pagamento (opcional, só pode ser preenchida se status for Paid).

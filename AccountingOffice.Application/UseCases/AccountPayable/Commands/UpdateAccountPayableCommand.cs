@@ -9,6 +9,27 @@ namespace AccountingOffice.Application.UseCases.AccountPay.Commands;
 /// </summary>
 public sealed record UpdateAccountPayableCommand : ICommand<Result<bool>>
 {
+    public UpdateAccountPayableCommand(Guid tenantId,
+                                       Guid id,
+                                       string description = "",
+                                       int status = 0,
+                                       int payMethod = 0,
+                                       DateTime? paymentDate = null)
+    {
+        TenantId = tenantId;
+        Id = id;
+        Description = description;
+        Status = status;
+        PayMethod = payMethod;
+        PaymentDate = paymentDate;
+    }
+
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+    public bool HasStatus => Enum.IsDefined(typeof(AccountStatus), Status);
+    public bool HasPayMethod => Enum.IsDefined(typeof(PaymentMethod), PayMethod);
+    public bool HasPaymentDate => PaymentDate.HasValue;
+
+
     /// <summary>
     /// Identificador do Tenant.
     /// </summary>
@@ -27,12 +48,12 @@ public sealed record UpdateAccountPayableCommand : ICommand<Result<bool>>
     /// <summary>
     /// Status da conta a pagar.
     /// </summary>
-    public AccountStatus Status { get; init; }
+    public int Status { get; init; }
 
     /// <summary>
     /// Método de pagamento.
     /// </summary>
-    public PaymentMethod PayMethod { get; init; }
+    public int PayMethod { get; init; }
 
     /// <summary>
     /// Data de pagamento (opcional, só pode ser preenchida se status for Paid).

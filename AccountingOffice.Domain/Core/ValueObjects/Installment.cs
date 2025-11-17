@@ -63,12 +63,15 @@ public class Installment
         DateTime? paymentDate = null)
     {
         if (installmentNumber <= 0)
-            return DomainResult.Failure("Installment number must be greater than zero.");
+            return DomainResult.Failure("Número de parcela precisa ser maior que zero.");
+        
         if (amount <= 0)
-            return DomainResult.Failure("Amount must be greater than zero.");
+            return DomainResult.Failure("O valor precisa ser maior que zero.");
+        
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return DomainResult.Failure("Payment date cannot be in the future.");
-        return DomainResult.Success();
+            return DomainResult.Failure("Data de pagamento não pode ser no futuro.");
+            
+            return DomainResult.Success();
     }
     #endregion
 
@@ -115,7 +118,7 @@ public class Installment
     public DomainResult ChangeStatus(AccountStatus newStatus, DateTime? paymentDate = null)
     {
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return DomainResult.Failure("Payment date cannot be in the future.");
+            return DomainResult.Failure("Data de pagamento não pode  ser no futuro.");
 
         Status = newStatus;
         PaymentDate = paymentDate;

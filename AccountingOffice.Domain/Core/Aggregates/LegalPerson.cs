@@ -53,13 +53,18 @@ public class LegalPerson : Person<Guid>
     /// <param name="legalName"></param>
     /// <param name="document"></param>
     /// <returns></returns>
-    private static DomainResult ValidateCreationParameters(string legalName, string document)
+    private static DomainResult ValidateLegalPersonParameters(string legalName, string document)
     {
+        List<string> errors = new();
+
         if (string.IsNullOrWhiteSpace(legalName))
-            return DomainResult.Failure("Razão social não pode ser nula ou vazia.");
+            errors.Add("Razão social não pode ser nula ou vazia.");
 
         if (!LegalPersonDocValidator.IsCnpj(document))
-            return DomainResult.Failure("CNPJ inválido.");
+            errors.Add("CNPJ inválido.");
+
+        if (errors.Any())
+            return DomainResult.Failure(string.Join("|", errors));  
 
         return DomainResult.Success();
     }
@@ -99,13 +104,17 @@ public class LegalPerson : Person<Guid>
             phoneNumber,
             legalName);
 
+        List<string> errors = new();
         DomainResult? baseValidation = ValidatePersonParameters(tenantId, name, document, email, phoneNumber);
         if (baseValidation.IsFailure)
-            return DomainResult<LegalPerson>.Failure(baseValidation.Error);
+            errors.Add(baseValidation.Error);
 
-        DomainResult? validationResult = ValidateCreationParameters(legalName, document);
+        DomainResult? validationResult = ValidateLegalPersonParameters(legalName, document);
         if (validationResult.IsFailure)
-            return DomainResult<LegalPerson>.Failure(validationResult.Error);
+            errors.Add(validationResult.Error);
+
+        if (errors.Any())
+            return DomainResult<LegalPerson>.Failure(string.Join("|", errors));
 
         return DomainResult<LegalPerson>.Success(legalPerson);
 

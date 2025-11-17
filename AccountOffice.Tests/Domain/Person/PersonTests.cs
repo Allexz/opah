@@ -319,7 +319,7 @@ public class PersonTests
     }
 
     [Fact]
-    public void ChangePhone_Should_Update_Phone_When_Valid()
+    public void ChangePhone_Should_Fail_Phone_When_Format_InValid()
     {
         // Arrange
         var person = IndividualPerson.Create(
@@ -338,8 +338,8 @@ public class PersonTests
         var result = person.ChangePhone(newPhone);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(newPhone, person.Phone);
+        Assert.True(result.IsFailure);
+        Assert.Contains("inválido", result.Error,StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]

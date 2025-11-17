@@ -9,10 +9,10 @@ public class Company
 {
     #region Propriedades
     public Guid Id { get; protected set; }
-    public string Name { get; private set; } = string.Empty;
-    public string Document { get; private set; } = string.Empty;
-    public string Email { get; private set; } = string.Empty;
-    public string Phone { get; private set; } = string.Empty;
+    public string Name { get; private set; }  
+    public string Document { get; private set; } 
+    public string Email { get; private set; }  
+    public string Phone { get; private set; }  
     public bool Active { get; private set; }
     public DateTime CreatedAt { get; protected set; }
     #endregion
@@ -47,17 +47,23 @@ public class Company
                                                string phone,
                                                bool active = true)
     {
+
+        List<string> errors = new();    
+
         if (string.IsNullOrWhiteSpace(name))
-            return DomainResult<Company>.Failure("Nome da empresa é requerido.");
+            errors.Add("Nome da empresa é requerido.");
 
         if (string.IsNullOrWhiteSpace(document))
-            return DomainResult<Company>.Failure("Documento da empresa é requerido.");
+            errors.Add("Documento da empresa é requerido.");
 
         if (string.IsNullOrWhiteSpace(email))
-            return DomainResult<Company>.Failure("E-mail da empresa é requerido.");
+            errors.Add("E-mail da empresa é requerido.");
 
         if (string.IsNullOrWhiteSpace(phone))
-            return DomainResult<Company>.Failure("Telefone da empresa é requerido.");
+            errors.Add("Telefone da empresa é requerido.");
+
+        if (errors.Any())
+            return DomainResult<Company>.Failure(string.Join("|", errors));
 
         return DomainResult<Company>.Success(
             new Company(
@@ -71,7 +77,7 @@ public class Company
 
 
 
-    public DomainResult UpdateName(string name)
+    public DomainResult ChangeName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             return DomainResult.Failure("Nome da empresa é requerido.");
@@ -80,7 +86,7 @@ public class Company
         return DomainResult.Success();
     }
 
-    public DomainResult UpdateEmail(string email)
+    public DomainResult ChangeEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
             return DomainResult.Failure("E-mail da empresa é requerido.");
@@ -89,7 +95,7 @@ public class Company
         return DomainResult.Success();
     }
 
-    public DomainResult UpdatePhone(string phone)
+    public DomainResult ChangePhone(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone))
             return DomainResult.Failure("Telefone da empresa é requerido.");

@@ -261,7 +261,7 @@ public class AccountTests
         var dueDate = DateTime.UtcNow.AddDays(20);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => AccountPayable.Create(
+        var domainResult = AccountPayable.Create(
             _validId,
             _validTenantId,
             description,
@@ -270,7 +270,10 @@ public class AccountTests
             dueDate,
             AccountStatus.Pending,
             null!,
-            PaymentMethod.BankTransfer));
+            PaymentMethod.BankTransfer);
+
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("nula",domainResult.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

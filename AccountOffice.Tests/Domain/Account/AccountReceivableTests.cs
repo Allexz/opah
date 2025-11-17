@@ -127,7 +127,7 @@ public class AccountReceivableTests
         var dueDate = DateTime.UtcNow.AddDays(20);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => AccountReceivable.Create(
+        var domainResult = AccountReceivable.Create(
             _validId,
             _validTenantId,
             description,
@@ -137,7 +137,12 @@ public class AccountReceivableTests
             AccountStatus.Pending,
             _validCustomer,
             PaymentMethod.BankTransfer,
-            string.Empty));
+            string.Empty);
+
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("identificador", domainResult.Error, StringComparison.OrdinalIgnoreCase);
+
+
     }
 
     [Fact]
@@ -150,7 +155,7 @@ public class AccountReceivableTests
         var dueDate = DateTime.UtcNow.AddDays(20);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => AccountReceivable.Create(
+        var domainResult = AccountReceivable.Create(
             _validId,
             _validTenantId,
             description,
@@ -160,7 +165,10 @@ public class AccountReceivableTests
             AccountStatus.Pending,
             _validCustomer,
             PaymentMethod.BankTransfer,
-            "   "));
+            "   ");
+
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("identificador", domainResult.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -261,31 +269,32 @@ public class AccountReceivableTests
     }
 
     [Fact]
-    public void AccountReceivable_Should_Throw_When_Adding_Null_Installment()
+    public void AccountReceivable_Should_Return_Failure_When_Adding_Null_Installment()
     {
         // Arrange
         var account = CreateValidAccountReceivable();
 
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => account.AddInstallment(null!));
+        //Act and Assert
+        var domainResult = account.AddInstallment(null!);
+        Assert.True(domainResult.IsFailure);
     }
 
     [Fact]
-    public void AccountReceivable_Should_Throw_When_Adding_Duplicate_Installment_Number()
+    public void AccountReceivable_Should_Return_Failure_When_Adding_Duplicate_Installment_Number()
     {
         // Arrange
         var account = CreateValidAccountReceivable();
-        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(1, 600m, DateTime.UtcNow.AddDays(16), AccountStatus.Pending).Value;
 
-        account.AddInstallment(installment1);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => account.AddInstallment(installment2));
+        //Act and Assert
+        account.AddInstallment(Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending).Value);
+        var domainResult = account.AddInstallment(Installment.Create(1, 600m, DateTime.UtcNow.AddDays(16), AccountStatus.Pending).Value);
+        
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("já",domainResult.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void AccountReceivable_Should_Throw_When_Installment_DueDate_Is_Before_IssueDate()
+    public void AccountReceivable_Should_Return_Failure_When_Installment_DueDate_Is_Before_IssueDate()
     {
         // Arrange
         var account = CreateValidAccountReceivable();
@@ -296,11 +305,13 @@ public class AccountReceivableTests
             AccountStatus.Pending).Value;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => account.AddInstallment(installment));
+        var domainResult = account.AddInstallment(installment);
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("vencimento", domainResult.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void AccountReceivable_Should_Throw_When_Installment_DueDate_Is_After_DueDate()
+    public void AccountReceivable_Should_Return_Failure_When_Installment_DueDate_Is_After_DueDate()
     {
         // Arrange
         var account = CreateValidAccountReceivable();
@@ -311,7 +322,9 @@ public class AccountReceivableTests
             AccountStatus.Pending).Value;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => account.AddInstallment(installment));
+        var domainResult = account.AddInstallment(installment);
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("vencimento", domainResult.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

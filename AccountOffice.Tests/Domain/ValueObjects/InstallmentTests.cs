@@ -73,7 +73,7 @@ public class InstallmentTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("greater than zero", result.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("maior", result.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public class InstallmentTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("greater than zero", result.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("maior", result.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class InstallmentTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("future", result.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("futuro", result.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion
@@ -245,7 +245,7 @@ public class InstallmentTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("future", result.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("futuro", result.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]

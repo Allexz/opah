@@ -5,8 +5,9 @@ using AccountingOffice.Application.Interfaces.Repositories;
 using AccountingOffice.Application.UseCases.Individual.Commands;
 using AccountingOffice.Domain.Core.Aggregates;
 using AccountingOffice.Domain.Core.Common;
+using AccountingOffice.Domain.Core.Enums;
 
-namespace AccountingOffice.Application.UseCases.Individual.Handlers;
+namespace AccountingOffice.Application.UseCases.Individual.CommandHandler;
 
 public class IndividualPersonCommandHandler :
     ICommandHandler<CreateIndividualPersonCommand, Result<Guid>>,
@@ -30,7 +31,7 @@ public class IndividualPersonCommandHandler :
                                                                         Domain.Core.Enums.PersonType.Individual,
                                                                         command.Email,
                                                                         command.PhoneNumber,
-                                                                        command.MaritalStatus);
+                                                                        (MaritalStatus)command.MaritalStatus);
 
         if (!domainResult.IsSuccess)
             return Result<Guid>.Failure(domainResult.Error);
@@ -48,17 +49,14 @@ public class IndividualPersonCommandHandler :
             return Result<bool>.Failure("Pessoa física não encontrada.");
         }
 
-        if (individualPerson.Phone != command.PhoneNumber)individualPerson.ChangePhone(command.PhoneNumber);
-
-        if (individualPerson.Email != command.Email)individualPerson.ChangeEmail(command.Email);
-
-        if (individualPerson.Name != command.Name)individualPerson.ChangeName(command.Name);
-
-        if (individualPerson.MaritalStatus != command.MaritalStatus) individualPerson.ChangeMaritalStatus(command.MaritalStatus);
+        if (command.HasPhoneNumber) individualPerson.ChangePhone(command.PhoneNumber);
+        if (command.HasEmail) individualPerson.ChangeEmail(command.Email);
+        if (command.HasName) individualPerson.ChangeName(command.Name);
+        if (command.HasMaritalStatus)individualPerson.ChangeMaritalStatus((MaritalStatus)command.MaritalStatus);
 
         await _individualPersonRepository.UpdateAsync(individualPerson);
-        return Result<bool>.Success(true);
 
+        return Result<bool>.Success(true);
     }
 
     public async Task<Result<bool>> Handle(DeleteIndividualPersonCommand command, CancellationToken cancellationToken)

@@ -1,6 +1,7 @@
 using AccountingOffice.Domain.Core.Common;
 using AccountingOffice.Domain.Core.Enums;
 using AccountingOffice.Domain.Core.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace AccountingOffice.Domain.Core.Aggregates;
 
@@ -123,6 +124,11 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
         if (string.IsNullOrWhiteSpace(newEmail))
             return DomainResult.Failure("E-mail é requerido.");
 
+        string pattern = @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z]{2,})+$";
+        if (!Regex.IsMatch(newEmail, pattern))
+            return DomainResult.Failure("E-mail em formato inválido.");
+
+
         Email = newEmail.Trim();
         return DomainResult.Success();
     }
@@ -136,6 +142,10 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
     {
         if (string.IsNullOrWhiteSpace(newPhone))
             return DomainResult.Failure("Telefone é requerido.");
+
+        string pattern = @"^\([1-9][0-9]\)[0-9]{5}-[0-9]{4}$";
+        if(!Regex.IsMatch(newPhone, pattern))
+            return DomainResult.Failure("Telefone em formato inválido. Formato esperado: (XX)XXXXX-XXXX");
 
         Phone = newPhone.Trim();
         return DomainResult.Success();
