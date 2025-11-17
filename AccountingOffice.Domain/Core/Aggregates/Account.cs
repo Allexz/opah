@@ -33,7 +33,7 @@ public abstract class Account<TId> : IMultiTenantEntity<TId>
         RelatedParty = relatedParty;
     }
 
-    protected static Result ValidateAccountParameters(TId tenantId,
+    protected static DomainResult ValidateAccountParameters(TId tenantId,
                                                       string description,
                                                       decimal ammount,
                                                       DateTime issueDate,
@@ -42,19 +42,19 @@ public abstract class Account<TId> : IMultiTenantEntity<TId>
                                                       Person<TId> relatedParty)
     {
         if (EqualityComparer<TId>.Default.Equals(tenantId, default!))
-            return Result.Failure("TenantId é obrigatório.");
+            return DomainResult.Failure("TenantId é obrigatório.");
 
         if (!Enum.IsDefined(typeof(AccountStatus), Status))
-            return Result.Failure("Status da conta inválido.");
+            return DomainResult.Failure("Status da conta inválido.");
 
         if (string.IsNullOrWhiteSpace(description))
-            return Result.Failure("A descrição não pode ser nula ou vazia." );
+            return DomainResult.Failure("A descrição não pode ser nula ou vazia." );
 
         if (ammount <= 0)
-            return Result.Failure("O valor deve ser maior que zero.");
+            return DomainResult.Failure("O valor deve ser maior que zero.");
 
         if (issueDate > dueDate)
-            return Result.Failure("Data de emissão não pode ser maior que data de vencimento.");
+            return DomainResult.Failure("Data de emissão não pode ser maior que data de vencimento.");
 
         if (relatedParty == null)
             throw new ArgumentNullException(nameof(relatedParty));
@@ -66,10 +66,10 @@ public abstract class Account<TId> : IMultiTenantEntity<TId>
         {
             var accountTenantId = (Guid)(object)tenantId!;
             if (!accountTenantId.Equals(relatedParty.TenantId))
-                return Result.Failure("A pessoa relacionada deve pertencer à mesma empresa.");
+                return DomainResult.Failure("A pessoa relacionada deve pertencer à mesma empresa.");
         }
 
-        return Result.Success();
+        return DomainResult.Success();
     }
 
 

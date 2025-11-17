@@ -47,19 +47,19 @@ public class AccountReceivable : Account<Guid>
     #endregion
 
     #region Validação
-    private static Result ValidateCreationParameters(DateTime? receivedDate, AccountStatus status)
+    private static DomainResult ValidateCreationParameters(DateTime? receivedDate, AccountStatus status)
     {
         if (receivedDate.HasValue && status != AccountStatus.Received)
-            return Result.Failure("Data de recebimento só pode ser preenchida junto com status de recebida.");
+            return DomainResult.Failure("Data de recebimento só pode ser preenchida junto com status de recebida.");
         if (receivedDate.HasValue && receivedDate.Value > DateTime.Now)
-            return Result.Failure("Data de recebimento não pode ser marcada para o futuro.");
+            return DomainResult.Failure("Data de recebimento não pode ser marcada para o futuro.");
 
-        return Result.Success();
+        return DomainResult.Success();
     }
     #endregion
 
     #region Alterações de estado
-    public static Result<AccountReceivable>  Create(
+    public static DomainResult<AccountReceivable>  Create(
         Guid id,
         Guid tenantId,
         string description,
@@ -73,7 +73,7 @@ public class AccountReceivable : Account<Guid>
         DateTime? receivedDate = null)
     {
         
-        Result? baseValidationResult = ValidateAccountParameters(tenantId,
+        DomainResult? baseValidationResult = ValidateAccountParameters(tenantId,
                                                          description,
                                                          ammount,
                                                          issueDate,
@@ -81,14 +81,14 @@ public class AccountReceivable : Account<Guid>
                                                          status,
                                                          customer);
         if (baseValidationResult.IsFailure)
-            return Result<AccountReceivable>.Failure(baseValidationResult.Error);
+            return DomainResult<AccountReceivable>.Failure(baseValidationResult.Error);
 
         baseValidationResult = ValidateCreationParameters(receivedDate, status);
 
         if (baseValidationResult.IsFailure)
-            return Result<AccountReceivable>.Failure(baseValidationResult.Error);
+            return DomainResult<AccountReceivable>.Failure(baseValidationResult.Error);
 
-        return Result<AccountReceivable>.Success ( new AccountReceivable(
+        return DomainResult<AccountReceivable>.Success ( new AccountReceivable(
             id,
             tenantId,
             description,

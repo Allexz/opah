@@ -56,19 +56,19 @@ public class Installment
     /// <param name="status"></param>
     /// <param name="paymentDate"></param>
     /// <returns></returns>
-    private static Result ValidationCreationParameters(int installmentNumber,
+    private static DomainResult ValidationCreationParameters(int installmentNumber,
         decimal amount,
         DateTime dueDate,
         AccountStatus status,
         DateTime? paymentDate = null)
     {
         if (installmentNumber <= 0)
-            return Result.Failure("Installment number must be greater than zero.");
+            return DomainResult.Failure("Installment number must be greater than zero.");
         if (amount <= 0)
-            return Result.Failure("Amount must be greater than zero.");
+            return DomainResult.Failure("Amount must be greater than zero.");
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return Result.Failure("Payment date cannot be in the future.");
-        return Result.Success();
+            return DomainResult.Failure("Payment date cannot be in the future.");
+        return DomainResult.Success();
     }
     #endregion
 
@@ -83,19 +83,19 @@ public class Installment
     /// <param name="status"></param>
     /// <param name="paymentDate"></param>
     /// <returns></returns>
-    public static Result<Installment> Create(int installmentNumber,
+    public static DomainResult<Installment> Create(int installmentNumber,
                                              decimal amount,
                                              DateTime dueDate,
                                              AccountStatus status,
                                              DateTime? paymentDate = null)
     {
-        Result validationResult = ValidationCreationParameters(installmentNumber,
+        DomainResult validationResult = ValidationCreationParameters(installmentNumber,
                                                             amount,
                                                             dueDate,
                                                             status,
                                                             paymentDate);
         if (validationResult.IsFailure)
-            return Result<Installment>.Failure(validationResult.Error);
+            return DomainResult<Installment>.Failure(validationResult.Error);
 
         Installment installment = new Installment(installmentNumber,
                                                   amount,
@@ -103,7 +103,7 @@ public class Installment
                                                   status,
                                                   paymentDate);
 
-        return Result<Installment>.Success(installment);
+        return DomainResult<Installment>.Success(installment);
 
     }
     /// <summary>
@@ -112,15 +112,15 @@ public class Installment
     /// <param name="newStatus"></param>
     /// <param name="paymentDate"></param>
     /// <returns></returns>
-    public Result ChangeStatus(AccountStatus newStatus, DateTime? paymentDate = null)
+    public DomainResult ChangeStatus(AccountStatus newStatus, DateTime? paymentDate = null)
     {
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return Result.Failure("Payment date cannot be in the future.");
+            return DomainResult.Failure("Payment date cannot be in the future.");
 
         Status = newStatus;
         PaymentDate = paymentDate;
 
-        return Result.Success();
+        return DomainResult.Success();
     }   
 
     #endregion

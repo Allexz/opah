@@ -56,15 +56,15 @@ public class IndividualPerson : Person<Guid>
     /// <param name="maritalStatus"></param>
     /// <param name="cpfDoc"></param>
     /// <returns></returns>
-    private static Result ValidateCreationParameters(MaritalStatus maritalStatus, string cpfDoc)
+    private static DomainResult ValidateCreationParameters(MaritalStatus maritalStatus, string cpfDoc)
     {
         if (!Enum.IsDefined(typeof(MaritalStatus), maritalStatus))
-            return Result.Failure("Razão social não pode ser nula ou vazia.");
+            return DomainResult.Failure("Razão social não pode ser nula ou vazia.");
 
         if (!IndividualPersonDocValidator.IsCpf(cpfDoc))
-            return Result.Failure("CPF inválido.");
+            return DomainResult.Failure("CPF inválido.");
 
-        return Result.Success();
+        return DomainResult.Success();
     }
     #endregion
 
@@ -81,7 +81,7 @@ public class IndividualPerson : Person<Guid>
     /// <param name="phoneNumber"></param>
     /// <param name="maritalStatus"></param>
     /// <returns></returns>
-    public static Result<IndividualPerson> Create(
+    public static DomainResult<IndividualPerson> Create(
         Guid id,
         Guid tenantId,
         string name,
@@ -102,25 +102,25 @@ public class IndividualPerson : Person<Guid>
             phoneNumber,
             maritalStatus);
 
-        Result? baseValidation = ValidatePersonParameters(tenantId, name, document, email, phoneNumber);
+        DomainResult? baseValidation = ValidatePersonParameters(tenantId, name, document, email, phoneNumber);
         if (baseValidation.IsFailure)
-            return Result<IndividualPerson>.Failure(baseValidation.Error);
+            return DomainResult<IndividualPerson>.Failure(baseValidation.Error);
 
-        Result? validationResult = ValidateCreationParameters(maritalStatus, document);
+        DomainResult? validationResult = ValidateCreationParameters(maritalStatus, document);
         if (validationResult.IsFailure)
-            return Result<IndividualPerson>.Failure(validationResult.Error);
+            return DomainResult<IndividualPerson>.Failure(validationResult.Error);
 
-        return Result<IndividualPerson>.Success(individualPerson);
+        return DomainResult<IndividualPerson>.Success(individualPerson);
 
     }
 
-    public Result ChangeMaritalStatus(MaritalStatus newStatus)
+    public DomainResult ChangeMaritalStatus(MaritalStatus newStatus)
     {
         if (!Enum.IsDefined(typeof(MaritalStatus), newStatus))
-            return Result.Failure("Estado civil inválido.");
+            return DomainResult.Failure("Estado civil inválido.");
 
         MaritalStatus = newStatus;
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     #endregion

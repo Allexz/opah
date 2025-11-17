@@ -1,3 +1,5 @@
+using AccountingOffice.Domain.Core.Common;
+
 namespace AccountingOffice.Domain.Core.Aggregates;
 
 /// <summary>
@@ -5,7 +7,18 @@ namespace AccountingOffice.Domain.Core.Aggregates;
 /// </summary>
 public class Company
 {
-    public Company(
+    #region Propriedades
+    public Guid Id { get; protected set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Document { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string Phone { get; private set; } = string.Empty;
+    public bool Active { get; private set; }
+    public DateTime CreatedAt { get; protected set; }
+    #endregion
+
+    #region Construtor
+    private Company(
         Guid id,
         string name,
         string document,
@@ -13,18 +26,6 @@ public class Company
         string phone,
         bool active = true)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Nome da empresa é requerido.", nameof(name));
-
-        if (string.IsNullOrWhiteSpace(document))
-            throw new ArgumentException("Documento da empresa é requerido.", nameof(document));
-
-        if (string.IsNullOrWhiteSpace(email))
-            throw new ArgumentException("E-mail da empresa é requerido.", nameof(email));
-
-        if (string.IsNullOrWhiteSpace(phone))
-            throw new ArgumentException("Telefone da empresa é requerido.", nameof(phone));
-
         Id = id;
         Name = name.Trim();
         Document = document.Trim();
@@ -34,35 +35,66 @@ public class Company
         CreatedAt = DateTime.UtcNow;
     }
 
-    protected Company() { } // Para ORM
+    private Company() { } // Para ORM
 
-    public Guid Id { get; protected set; }
-    public string Name { get; private set; } = string.Empty;
-    public string Document { get; private set; } = string.Empty;
-    public string Email { get; private set; } = string.Empty;
-    public string Phone { get; private set; } = string.Empty;
-    public bool Active { get; private set; }
-    public DateTime CreatedAt { get; protected set; }
 
-    public void UpdateName(string name)
+    #endregion
+
+    public static DomainResult<Company> Create(Guid id,
+                                               string name,
+                                               string document,
+                                               string email,
+                                               string phone,
+                                               bool active = true)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Nome da empresa é requerido.", nameof(name));
-        Name = name.Trim();
+            return DomainResult<Company>.Failure("Nome da empresa é requerido.");
+
+        if (string.IsNullOrWhiteSpace(document))
+            return DomainResult<Company>.Failure("Documento da empresa é requerido.");
+
+        if (string.IsNullOrWhiteSpace(email))
+            return DomainResult<Company>.Failure("E-mail da empresa é requerido.");
+
+        if (string.IsNullOrWhiteSpace(phone))
+            return DomainResult<Company>.Failure("Telefone da empresa é requerido.");
+
+        return DomainResult<Company>.Success(
+            new Company(
+                id,
+                name.Trim(),
+                document.Trim(),
+                email.Trim(),
+                phone.Trim(),
+                active));
     }
 
-    public void UpdateEmail(string email)
+
+
+    public DomainResult UpdateName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return DomainResult.Failure("Nome da empresa é requerido.");
+        Name = name.Trim();
+
+        return DomainResult.Success();
+    }
+
+    public DomainResult UpdateEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
-            throw new ArgumentException("E-mail da empresa é requerido.", nameof(email));
+            return DomainResult.Failure("E-mail da empresa é requerido.");
         Email = email.Trim();
+
+        return DomainResult.Success();
     }
 
-    public void UpdatePhone(string phone)
+    public DomainResult UpdatePhone(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone))
-            throw new ArgumentException("Telefone da empresa é requerido.", nameof(phone));
+            return DomainResult.Failure("Telefone da empresa é requerido.");
         Phone = phone.Trim();
+        return DomainResult.Success();
     }
 
     public void Activate() => Active = true;

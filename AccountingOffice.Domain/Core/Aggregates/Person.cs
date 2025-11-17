@@ -71,7 +71,7 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
     /// <param name="email"></param>
     /// <param name="phone"></param>
     /// <returns></returns>
-    protected static Result ValidatePersonParameters(
+    protected static DomainResult ValidatePersonParameters(
         Guid tenantId,
         string name,
         string document,
@@ -79,21 +79,21 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
         string phone)
     {
         if (tenantId == Guid.Empty)
-            return Result.Failure("TenantId é obrigatório.");
+            return DomainResult.Failure("TenantId é obrigatório.");
 
         if (string.IsNullOrWhiteSpace(name))
-            return Result.Failure("Nome é requerido.");
+            return DomainResult.Failure("Nome é requerido.");
 
         if (string.IsNullOrWhiteSpace(document))
-            return Result.Failure("Documento é requerido.");
+            return DomainResult.Failure("Documento é requerido.");
 
         if (string.IsNullOrWhiteSpace(email))
-            return Result.Failure("E-mail é requerido.");
+            return DomainResult.Failure("E-mail é requerido.");
 
         if (string.IsNullOrWhiteSpace(phone))
-            return Result.Failure("Telefone é requerido.");
+            return DomainResult.Failure("Telefone é requerido.");
 
-        return Result.Success();
+        return DomainResult.Success();
     }
     #endregion
 
@@ -104,13 +104,13 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
     /// </summary>
     /// <param name="newName"></param>
     /// <returns></returns>
-    public Result ChangeName(string newName)
+    public DomainResult ChangeName(string newName)
     {
         if (string.IsNullOrWhiteSpace(newName))
-            return Result.Failure("Nome é requerido.");
+            return DomainResult.Failure("Nome é requerido.");
 
         Name = newName.Trim();
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     /// <summary>
@@ -118,13 +118,13 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
     /// </summary>
     /// <param name="newEmail"></param>
     /// <returns></returns>
-    public Result ChangeEmail(string newEmail)
+    public DomainResult ChangeEmail(string newEmail)
     {
         if (string.IsNullOrWhiteSpace(newEmail))
-            return Result.Failure("E-mail é requerido.");
+            return DomainResult.Failure("E-mail é requerido.");
 
         Email = newEmail.Trim();
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     /// <summary>
@@ -132,13 +132,13 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
     /// </summary>
     /// <param name="newPhone"></param>
     /// <returns></returns>
-    public Result ChangePhone(string newPhone)
+    public DomainResult ChangePhone(string newPhone)
     {
         if (string.IsNullOrWhiteSpace(newPhone))
-            return Result.Failure("Telefone é requerido.");
+            return DomainResult.Failure("Telefone é requerido.");
 
         Phone = newPhone.Trim();
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     #endregion

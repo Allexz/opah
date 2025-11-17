@@ -53,33 +53,33 @@ public class User : IMultiTenantEntity<Guid>
     #endregion
 
     #region Validação
-    private static Result ValidateCreationParameters(Guid companyId, string userName, string password)
+    private static DomainResult ValidateCreationParameters(Guid companyId, string userName, string password)
     {
         if (string.IsNullOrWhiteSpace(userName))
-            return Result.Failure("UserName é obrigatório.");
+            return DomainResult.Failure("UserName é obrigatório.");
 
         if (string.IsNullOrWhiteSpace(password))
-            return Result.Failure("Senha é obrigatório.");
+            return DomainResult.Failure("Senha é obrigatório.");
 
         if (companyId == Guid.Empty)
-            return Result.Failure("CompanyId é obrigatório.");
+            return DomainResult.Failure("CompanyId é obrigatório.");
 
-        return Result.Success();
+        return DomainResult.Success();
     }
     #endregion
 
     #region Alteração de estado
-    public static Result<User> Create(
+    public static DomainResult<User> Create(
         int id,
         Guid companyId,
         string userName,
         string password)
     {
-        Result? validationResult = ValidateCreationParameters(companyId, userName, password);
+        DomainResult? validationResult = ValidateCreationParameters(companyId, userName, password);
         if (validationResult.IsFailure)
-            return Result<User>.Failure(validationResult.Error);
+            return DomainResult<User>.Failure(validationResult.Error);
 
-        return Result<User>.Success(new User(id, companyId, userName, password));
+        return DomainResult<User>.Success(new User(id, companyId, userName, password));
     }
 
     /// <summary>
@@ -95,13 +95,13 @@ public class User : IMultiTenantEntity<Guid>
     /// <summary>
     /// Atualiza a senha do usuário.
     /// </summary>
-    public Result UpdatePassword(string password)
+    public DomainResult UpdatePassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))
-            Result.Failure("Password é obrigatório.");
+            DomainResult.Failure("Password é obrigatório.");
 
         Password = password;
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     /// <summary>

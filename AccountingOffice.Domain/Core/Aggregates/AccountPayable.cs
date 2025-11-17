@@ -55,15 +55,15 @@ public class AccountPayable : Account<Guid>
     /// <param name="paymentDate"></param>
     /// <param name="status"></param>
     /// <returns></returns>
-    private static Result ValidateCreationParameters(DateTime? paymentDate, AccountStatus status)
+    private static DomainResult ValidateCreationParameters(DateTime? paymentDate, AccountStatus status)
     {
         if (paymentDate.HasValue && status != AccountStatus.Paid)
-            return Result.Failure("A data de pagamento só pode ser se o status for pago .");
+            return DomainResult.Failure("A data de pagamento só pode ser se o status for pago .");
 
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return Result.Failure("Payment date cannot be in the future.");
+            return DomainResult.Failure("Payment date cannot be in the future.");
 
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     #endregion
@@ -84,7 +84,7 @@ public class AccountPayable : Account<Guid>
     /// <param name="payMethod"></param>
     /// <param name="paymentDate"></param>
     /// <returns></returns>
-    public static Result<AccountPayable> Create(
+    public static DomainResult<AccountPayable> Create(
         Guid id,
         Guid tenantId,
         string description,
@@ -96,7 +96,7 @@ public class AccountPayable : Account<Guid>
         PaymentMethod payMethod,
         DateTime? paymentDate = null)
     {
-        Result? validationResult = ValidateAccountParameters(tenantId,
+        DomainResult? validationResult = ValidateAccountParameters(tenantId,
                                                              description,
                                                              ammount,
                                                              issueDate,
@@ -104,11 +104,11 @@ public class AccountPayable : Account<Guid>
                                                              status,
                                                              supplier);
         if (!validationResult.IsSuccess)
-            return Result<AccountPayable>.Failure(validationResult.Error);
+            return DomainResult<AccountPayable>.Failure(validationResult.Error);
 
         validationResult = ValidateCreationParameters(paymentDate, status);
         if (!validationResult.IsSuccess)
-            return Result<AccountPayable>.Failure(validationResult.Error);
+            return DomainResult<AccountPayable>.Failure(validationResult.Error);
 
         AccountPayable accountPayable = new AccountPayable(
             id,
@@ -122,25 +122,25 @@ public class AccountPayable : Account<Guid>
             payMethod,
             paymentDate);
 
-        return Result<AccountPayable>.Success(accountPayable);
+        return DomainResult<AccountPayable>.Success(accountPayable);
     }
-    public Result AddInstallment(Installment installment)
+    public DomainResult AddInstallment(Installment installment)
     {
         if (installment == null)
-           return Result.Failure("Parcela não pode ser nula");
+           return DomainResult.Failure("Parcela não pode ser nula");
 
         if (_installments.Any(i => i.InstallmentNumber == installment.InstallmentNumber))
-            return Result.Failure($"Parcela com o identificador {installment.InstallmentNumber} já existe.");
+            return DomainResult.Failure($"Parcela com o identificador {installment.InstallmentNumber} já existe.");
 
         if (installment.DueDate < IssueDate)
-            return Result.Failure("Data de vencimento da parcela não pode ser anterior a data de emissão da conta.");
+            return DomainResult.Failure("Data de vencimento da parcela não pode ser anterior a data de emissão da conta.");
 
         if (installment.DueDate > DueDate)
-            return Result.Failure("Data de vencimento da parcela não pode ser após a data de vencimento da conta.");
+            return DomainResult.Failure("Data de vencimento da parcela não pode ser após a data de vencimento da conta.");
 
         _installments.Add(installment);
 
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     #endregion
