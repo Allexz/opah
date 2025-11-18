@@ -240,7 +240,7 @@ public class AccountReceivableTests
             1,
             500m,
             DateTime.UtcNow.AddDays(15),
-            AccountStatus.Pending);
+            AccountStatus.Pending, EntryType.Credit);
         var installment = installmentResult.Value;
 
         // Act
@@ -257,8 +257,8 @@ public class AccountReceivableTests
     {
         // Arrange
         var account = CreateValidAccountReceivable();
-        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(2, 500m, DateTime.UtcNow.AddDays(10), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending, EntryType.Credit).Value;
+        var installment2 = Installment.Create(2, 500m, DateTime.UtcNow.AddDays(10), AccountStatus.Pending,EntryType.Credit).Value;
 
         // Act
         account.AddInstallment(installment1);
@@ -286,8 +286,8 @@ public class AccountReceivableTests
         var account = CreateValidAccountReceivable();
 
         //Act and Assert
-        account.AddInstallment(Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending).Value);
-        var domainResult = account.AddInstallment(Installment.Create(1, 600m, DateTime.UtcNow.AddDays(16), AccountStatus.Pending).Value);
+        account.AddInstallment(Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending, EntryType.Credit).Value);
+        var domainResult = account.AddInstallment(Installment.Create(1, 600m, DateTime.UtcNow.AddDays(16), AccountStatus.Pending,EntryType.Credit).Value);
         
         Assert.True(domainResult.IsFailure);
         Assert.Contains("já",domainResult.Error, StringComparison.OrdinalIgnoreCase);
@@ -302,7 +302,7 @@ public class AccountReceivableTests
             1,
             500m,
             account.IssueDate.AddDays(-1), // Antes da data de emissão
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         var domainResult = account.AddInstallment(installment);
@@ -319,7 +319,7 @@ public class AccountReceivableTests
             1,
             500m,
             account.DueDate.AddDays(1), // Depois da data de vencimento
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         var domainResult = account.AddInstallment(installment);
@@ -336,7 +336,7 @@ public class AccountReceivableTests
             1,
             500m,
             account.IssueDate,
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act
         account.AddInstallment(installment);
@@ -354,7 +354,7 @@ public class AccountReceivableTests
             1,
             500m,
             account.DueDate,
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act
         account.AddInstallment(installment);

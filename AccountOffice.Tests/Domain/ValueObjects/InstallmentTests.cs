@@ -25,7 +25,7 @@ public class InstallmentTests
         var status = AccountStatus.Pending;
 
         // Act
-        var result = Installment.Create(installmentNumber, amount, dueDate, status);
+        var result = Installment.Create(installmentNumber, amount, dueDate, status, EntryType.Credit);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -46,9 +46,10 @@ public class InstallmentTests
         var dueDate = DateTime.UtcNow.AddDays(30);
         var status = AccountStatus.Paid;
         var paymentDate = DateTime.UtcNow.AddDays(-5);
+        var entryType = EntryType.Debit;
 
         // Act
-        var result = Installment.Create(installmentNumber, amount, dueDate, status, paymentDate);
+        var result = Installment.Create(installmentNumber, amount, dueDate, status, entryType,paymentDate);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -69,7 +70,7 @@ public class InstallmentTests
         var status = AccountStatus.Pending;
 
         // Act
-        var result = Installment.Create(invalidNumber, amount, dueDate, status);
+        var result = Installment.Create(invalidNumber, amount, dueDate, status, EntryType.Credit);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -88,7 +89,7 @@ public class InstallmentTests
         var status = AccountStatus.Pending;
 
         // Act
-        var result = Installment.Create(installmentNumber, invalidAmount, dueDate, status);
+        var result = Installment.Create(installmentNumber, invalidAmount, dueDate, status, EntryType.Credit);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -104,9 +105,10 @@ public class InstallmentTests
         var dueDate = DateTime.UtcNow.AddDays(30);
         var status = AccountStatus.Paid;
         var futurePaymentDate = DateTime.UtcNow.AddDays(1);
+        var entryType = EntryType.Debit;
 
         // Act
-        var result = Installment.Create(installmentNumber, amount, dueDate, status, futurePaymentDate);
+        var result = Installment.Create(installmentNumber, amount, dueDate, status,entryType, futurePaymentDate);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -125,7 +127,7 @@ public class InstallmentTests
     public void Installment_IsPaid_Should_Return_Correct_Value(AccountStatus status, bool expectedIsPaid)
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), status).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), status, EntryType.Credit).Value;
 
         // Act
         var isPaid = installment.IsPaid;
@@ -143,7 +145,7 @@ public class InstallmentTests
     {
         // Arrange
         var pastDueDate = DateTime.UtcNow.AddDays(-5);
-        var installment = Installment.Create(1, 1000m, pastDueDate, AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, pastDueDate, AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act
         var isOverdue = installment.IsOverdue;
@@ -158,7 +160,8 @@ public class InstallmentTests
         // Arrange
         var pastDueDate = DateTime.UtcNow.AddDays(-5);
         var paymentDate = DateTime.UtcNow.AddDays(-3);
-        var installment = Installment.Create(1, 1000m, pastDueDate, AccountStatus.Paid, paymentDate).Value;
+        var entryType = EntryType.Debit;
+        var installment = Installment.Create(1, 1000m, pastDueDate, AccountStatus.Paid,entryType, paymentDate).Value;
 
         // Act
         var isOverdue = installment.IsOverdue;
@@ -172,7 +175,7 @@ public class InstallmentTests
     {
         // Arrange
         var futureDueDate = DateTime.UtcNow.AddDays(30);
-        var installment = Installment.Create(1, 1000m, futureDueDate, AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, futureDueDate, AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act
         var isOverdue = installment.IsOverdue;
@@ -186,7 +189,7 @@ public class InstallmentTests
     {
         // Arrange
         var pastDueDate = DateTime.UtcNow.AddDays(-5);
-        var installment = Installment.Create(1, 1000m, pastDueDate, AccountStatus.Received).Value;
+        var installment = Installment.Create(1, 1000m, pastDueDate, AccountStatus.Received, EntryType.Credit).Value;
 
         // Act
         var isOverdue = installment.IsOverdue;
@@ -203,7 +206,7 @@ public class InstallmentTests
     public void Installment_ChangeStatus_Should_Succeed_With_Valid_Parameters()
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
         var newStatus = AccountStatus.Paid;
         var paymentDate = DateTime.UtcNow.AddDays(-1);
 
@@ -221,7 +224,7 @@ public class InstallmentTests
     public void Installment_ChangeStatus_Should_Succeed_Without_PaymentDate()
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
         var newStatus = AccountStatus.Cancelled;
 
         // Act
@@ -236,7 +239,7 @@ public class InstallmentTests
     public void Installment_ChangeStatus_Should_Fail_When_PaymentDate_Is_In_The_Future()
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
         var newStatus = AccountStatus.Paid;
         var futurePaymentDate = DateTime.UtcNow.AddDays(1);
 
@@ -256,7 +259,7 @@ public class InstallmentTests
     public void Installment_ChangeStatus_Should_Accept_All_Status_Values(AccountStatus newStatus)
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act
         var result = installment.ChangeStatus(newStatus);
@@ -279,9 +282,10 @@ public class InstallmentTests
         var dueDate = DateTime.UtcNow.AddDays(30);
         var status = AccountStatus.Pending;
         var paymentDate = DateTime.UtcNow.AddDays(-5);
+        var entryType = EntryType.Debit;
 
-        var installment1 = Installment.Create(installmentNumber, amount, dueDate, status, paymentDate).Value;
-        var installment2 = Installment.Create(installmentNumber, amount, dueDate, status, paymentDate).Value;
+        var installment1 = Installment.Create(installmentNumber, amount, dueDate, status,entryType, paymentDate).Value;
+        var installment2 = Installment.Create(installmentNumber, amount, dueDate, status,entryType, paymentDate).Value;
 
         // Act & Assert
         Assert.True(installment1.Equals(installment2));
@@ -293,8 +297,8 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_For_Different_Values()
     {
         // Arrange
-        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(2, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
+        var installment2 = Installment.Create(2, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         Assert.False(installment1.Equals(installment2));
@@ -306,8 +310,8 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_For_Different_Amounts()
     {
         // Arrange
-        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(1, 2000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
+        var installment2 = Installment.Create(1, 2000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         Assert.False(installment1.Equals(installment2));
@@ -317,8 +321,8 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_For_Different_DueDates()
     {
         // Arrange
-        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(60), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
+        var installment2 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(60), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         Assert.False(installment1.Equals(installment2));
@@ -328,8 +332,8 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_For_Different_Status()
     {
         // Arrange
-        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Paid).Value;
+        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
+        var installment2 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Paid, EntryType.Credit).Value;
 
         // Act & Assert
         Assert.False(installment1.Equals(installment2));
@@ -339,8 +343,8 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_For_Different_PaymentDates()
     {
         // Arrange
-        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Paid, DateTime.UtcNow.AddDays(-5)).Value;
-        var installment2 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Paid, DateTime.UtcNow.AddDays(-10)).Value;
+        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Paid,EntryType.Credit, DateTime.UtcNow.AddDays(-5)).Value;
+        var installment2 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Paid,EntryType.Credit, DateTime.UtcNow.AddDays(-10)).Value;
 
         // Act & Assert
         Assert.False(installment1.Equals(installment2));
@@ -350,7 +354,7 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_When_Comparing_With_Null()
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         Assert.False(installment.Equals(null));
@@ -362,7 +366,7 @@ public class InstallmentTests
     public void Installment_Equals_Should_Return_False_When_Comparing_With_Different_Type()
     {
         // Arrange
-        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
         var differentObject = new object();
 
         // Act & Assert
@@ -378,9 +382,10 @@ public class InstallmentTests
         var dueDate = DateTime.UtcNow.AddDays(30);
         var status = AccountStatus.Pending;
         var paymentDate = DateTime.UtcNow.AddDays(-5);
+        var entryType = EntryType.Debit;
 
-        var installment1 = Installment.Create(installmentNumber, amount, dueDate, status, paymentDate).Value;
-        var installment2 = Installment.Create(installmentNumber, amount, dueDate, status, paymentDate).Value;
+        var installment1 = Installment.Create(installmentNumber, amount, dueDate, status,entryType, paymentDate).Value;
+        var installment2 = Installment.Create(installmentNumber, amount, dueDate, status,entryType, paymentDate).Value;
 
         // Act
         var hashCode1 = installment1.GetHashCode();
@@ -394,8 +399,8 @@ public class InstallmentTests
     public void Installment_GetHashCode_Should_Return_Different_Value_For_Different_Properties()
     {
         // Arrange
-        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(2, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
+        var installment2 = Installment.Create(2, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act
         var hashCode1 = installment1.GetHashCode();
@@ -411,7 +416,7 @@ public class InstallmentTests
         // Arrange
         Installment? installment1 = null;
         Installment? installment2 = null;
-        var installment3 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending).Value;
+        var installment3 = Installment.Create(1, 1000m, DateTime.UtcNow.AddDays(30), AccountStatus.Pending, EntryType.Credit).Value;
 
         // Act & Assert
         Assert.True(installment1 == installment2);

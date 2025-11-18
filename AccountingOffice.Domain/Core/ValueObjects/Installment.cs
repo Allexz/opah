@@ -12,6 +12,7 @@ public class Installment
     public DateTime DueDate { get; private set; }
     public AccountStatus Status { get; private set; }
     public DateTime? PaymentDate { get; private set; }
+    public EntryType Entrytype { get; private set; }
     public bool IsPaid => Status == AccountStatus.Paid || Status == AccountStatus.Received;
     public bool IsOverdue => !IsPaid && DueDate < DateTime.Now.Date;
 
@@ -45,7 +46,7 @@ public class Installment
     /// </summary>
     private Installment() { }
     #endregion
-    
+
     #region Validação
     /// <summary>
     /// Validação dos parâmetros para criação de uma nova parcela.
@@ -60,18 +61,26 @@ public class Installment
         decimal amount,
         DateTime dueDate,
         AccountStatus status,
+        EntryType entryType,
         DateTime? paymentDate = null)
     {
+        List<string> errors = new();
+        if (!Enum.IsDefined(typeof(EntryType), entryType))
+            errors.Add("Tipo de lançamento inválido.");
+
         if (installmentNumber <= 0)
-            return DomainResult.Failure("Número de parcela precisa ser maior que zero.");
-        
+            errors.Add("Número de parcela precisa ser maior que zero.");
+
         if (amount <= 0)
-            return DomainResult.Failure("O valor precisa ser maior que zero.");
-        
+            errors.Add("O valor precisa ser maior que zero.");
+
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            return DomainResult.Failure("Data de pagamento não pode ser no futuro.");
-            
-            return DomainResult.Success();
+            errors.Add("Data de pagamento não pode ser no futuro.");
+
+        if (errors.Any())
+            return DomainResult.Failure(string.Join("; ", errors));
+
+        return DomainResult.Success();
     }
     #endregion
 
@@ -84,18 +93,21 @@ public class Installment
     /// <param name="amount"></param>
     /// <param name="dueDate"></param>
     /// <param name="status"></param>
+    /// <param name="entryType"></param>
     /// <param name="paymentDate"></param>
     /// <returns></returns>
     public static DomainResult<Installment> Create(int installmentNumber,
                                              decimal amount,
                                              DateTime dueDate,
                                              AccountStatus status,
+                                             EntryType entryType,
                                              DateTime? paymentDate = null)
     {
         DomainResult validationResult = ValidationCreationParameters(installmentNumber,
                                                             amount,
                                                             dueDate,
                                                             status,
+                                                            entryType,
                                                             paymentDate);
         if (validationResult.IsFailure)
             return DomainResult<Installment>.Failure(validationResult.Error);
@@ -124,7 +136,7 @@ public class Installment
         PaymentDate = paymentDate;
 
         return DomainResult.Success();
-    }   
+    }
 
     #endregion
 

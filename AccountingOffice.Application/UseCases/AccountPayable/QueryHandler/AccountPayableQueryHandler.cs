@@ -27,7 +27,7 @@ public class AccountPayableQueryHandler:
         return Result<IEnumerable<AccountPayableResult>>.Success(accounts.Select(MapToAccountPayableResult));
     }
 
-    public async Task<Result<IEnumerable<AccountPayableResult>>> Handle(GetAccountByRelatedPartQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<AccountPayableResult>>> Handle(GetAccountPayByRelatedPartQuery request, CancellationToken cancellationToken)
     {
         IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByRelatedPartyId(request.TenantId,request.TenantId,request.PageNum,request.PageSize, cancellationToken);
         if (!accounts.Any())

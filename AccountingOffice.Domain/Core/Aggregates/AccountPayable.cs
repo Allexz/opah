@@ -56,7 +56,7 @@ public class AccountPayable : Account<Guid>
             errors.Add("A data de pagamento só pode ser se o status for pago .");
 
         if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            errors.Add("Payment date cannot be in the future.");
+            errors.Add("A data de pagamento não pode ser no futuro.");
 
         if (errors.Any())
             return DomainResult.Failure(string.Join("|", errors));

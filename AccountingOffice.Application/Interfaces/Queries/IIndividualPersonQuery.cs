@@ -22,7 +22,7 @@ public interface IIndividualPersonQuery
     /// <param name="tenantId">Identificador do tenant/empresa.</param>
     /// <param name="cancellationToken">Token de cancelamento.</param>
     /// <returns>Lista de pessoas físicas do tenant.</returns>
-    Task<IEnumerable<IndividualPerson>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IndividualPerson>> GetByTenantIdAsync(Guid tenantId, int PageNum = 1, int PageSize =20, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Busca uma pessoa física pelo documento (CPF) e tenant.

@@ -16,10 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\AccountReceivable\QueryHandler\" />
-    <Folder Include="UseCases\AccountReceivable\Queries\" />
-    <Folder Include="UseCases\IndividualPerson\QueryHandler\" />
-    <Folder Include="UseCases\IndividualPerson\Queries\" />
+    <Folder Include="UseCases\Account\QueryHandler\" />
     <Folder Include="UseCases\LegalPerson\QueryHandler\" />
     <Folder Include="UseCases\LegalPerson\Queries\" />
     <Folder Include="UseCases\User\Queries\" />
