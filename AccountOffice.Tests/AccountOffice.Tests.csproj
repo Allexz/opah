@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <Folder Include="Application\Account\" />
-    <Folder Include="Application\ValueObjects\" />
     <Folder Include="Application\Person\" />
     <Folder Include="Domain\Account\" />
   </ItemGroup>
