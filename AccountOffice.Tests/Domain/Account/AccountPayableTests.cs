@@ -165,7 +165,7 @@ public class AccountPayableTests
 
         // Assert
         Assert.True(result.IsFailure);
-        Assert.Contains("future", result.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("futuro", result.Error, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class AccountPayableTests
             1,
             500m,
             DateTime.UtcNow.AddDays(15),
-            AccountStatus.Pending);
+            AccountStatus.Pending,EntryType.Debit);
 
         // Act
         var result = account.AddInstallment(installmentResult.Value);
@@ -194,8 +194,8 @@ public class AccountPayableTests
     {
         // Arrange
         AccountPayable account = CreateValidAccountPayable();
-        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(2, 500m, DateTime.UtcNow.AddDays(10), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending, EntryType.Debit).Value;
+        var installment2 = Installment.Create(2, 500m, DateTime.UtcNow.AddDays(10), AccountStatus.Pending, EntryType.Debit).Value;
 
         // Act
         account.AddInstallment(installment1);
@@ -224,8 +224,8 @@ public class AccountPayableTests
     {
         // Arrange
         var account = CreateValidAccountPayable();
-        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending).Value;
-        var installment2 = Installment.Create(1, 600m, DateTime.UtcNow.AddDays(16), AccountStatus.Pending).Value;
+        var installment1 = Installment.Create(1, 500m, DateTime.UtcNow.AddDays(15), AccountStatus.Pending, EntryType.Debit).Value;
+        var installment2 = Installment.Create(1, 600m, DateTime.UtcNow.AddDays(16), AccountStatus.Pending, EntryType.Debit).Value;
 
         account.AddInstallment(installment1);
 
@@ -246,7 +246,8 @@ public class AccountPayableTests
             1,
             500m,
             account.IssueDate.AddDays(-1), // Antes da data de emissão
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending,
+            EntryType.Debit).Value;
 
         // Act
         var result = account.AddInstallment(installment);
@@ -265,7 +266,8 @@ public class AccountPayableTests
             1,
             500m,
             account.DueDate.AddDays(1), // Depois da data de vencimento
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending,
+            EntryType.Debit).Value;
 
         // Act
         var result = account.AddInstallment(installment);
@@ -284,7 +286,8 @@ public class AccountPayableTests
             1,
             500m,
             account.IssueDate,
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending,
+            EntryType.Debit).Value;
 
         // Act
         var result = account.AddInstallment(installment);
@@ -302,7 +305,7 @@ public class AccountPayableTests
             1,
             500m,
             account.DueDate,
-            AccountStatus.Pending).Value;
+            AccountStatus.Pending, EntryType.Debit).Value;
 
         // Act
         var result = account.AddInstallment(installment);

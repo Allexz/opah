@@ -35,12 +35,10 @@ public class User : IMultiTenantEntity<Guid>
 
     #region Construtores
     private User(
-    int id,
     Guid companyId,
     string userName,
     string password)
     {
-        Id = id;
         TenantId = companyId; // CompanyId é o TenantId
         UserName = userName.Trim();
         Password = password; // Em produção, deve ser hash
@@ -53,55 +51,62 @@ public class User : IMultiTenantEntity<Guid>
     #endregion
 
     #region Validação
-    private static Result ValidateCreationParameters(Guid companyId, string userName, string password)
+    private static DomainResult ValidateCompanyParameters(Guid companyId, string userName, string password)
     {
+        List<string> errors = new();
         if (string.IsNullOrWhiteSpace(userName))
-            return Result.Failure("UserName é obrigatório.");
+            errors.Add("UserName é obrigatório.");
 
         if (string.IsNullOrWhiteSpace(password))
-            return Result.Failure("Senha é obrigatório.");
+            errors.Add("Senha é obrigatório.");
 
         if (companyId == Guid.Empty)
-            return Result.Failure("CompanyId é obrigatório.");
+            errors.Add("CompanyId é obrigatório.");
 
-        return Result.Success();
+        if (errors.Any())
+        {
+            return DomainResult.Failure(string.Join("|", errors));
+        }
+
+        return DomainResult.Success();
     }
     #endregion
 
     #region Alteração de estado
-    public static Result<User> Create(
-        int id,
+    public static DomainResult<User> Create(
         Guid companyId,
         string userName,
         string password)
     {
-        Result? validationResult = ValidateCreationParameters(companyId, userName, password);
+        DomainResult? validationResult = ValidateCompanyParameters(companyId, userName, password);
         if (validationResult.IsFailure)
-            return Result<User>.Failure(validationResult.Error);
-
-        return Result<User>.Success(new User(id, companyId, userName, password));
+            return DomainResult<User>.Failure(validationResult.Error);
+ 
+        return DomainResult<User>.Success(new User(  companyId, userName, password));
     }
 
     /// <summary>
     /// Atualiza o nome de usuário.
     /// </summary>
-    public void UpdateUserName(string userName)
+    public DomainResult ChangeUserName(string userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
-            throw new ArgumentException("UserName é obrigatório.", nameof(userName));
+            return DomainResult.Failure("UserName é obrigatório.");
         UserName = userName.Trim();
+
+        return DomainResult.Success();
     }
 
     /// <summary>
     /// Atualiza a senha do usuário.
     /// </summary>
-    public Result UpdatePassword(string password)
+    public DomainResult ChangePassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))
-            Result.Failure("Password é obrigatório.");
+            DomainResult.Failure("Password é obrigatório.");
 
         Password = password;
-        return Result.Success();
+        return DomainResult.Success();
     }
 
     /// <summary>

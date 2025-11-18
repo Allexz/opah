@@ -1,4 +1,5 @@
 using AccountingOffice.Domain.Core.Aggregates;
+using AccountingOffice.Domain.Core.Common;
 using AccountingOffice.Domain.Core.Interfaces;
 using Bogus;
 
@@ -25,13 +26,12 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, password);
+        var result = User.Create( _validCompanyId, userName, password);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         var user = result.Value;
-        Assert.Equal(_validId, user.Id);
         Assert.Equal(_validCompanyId, user.TenantId);
         Assert.Equal(userName.Trim(), user.UserName);
         Assert.Equal(password, user.Password);
@@ -48,7 +48,7 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, Guid.Empty, userName, password);
+        var result = User.Create( Guid.Empty, userName, password);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -66,7 +66,7 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, invalidUserName!, password);
+        var result = User.Create( _validCompanyId, invalidUserName!, password);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -84,7 +84,7 @@ public class UserTests
         var userName = _faker.Internet.UserName();
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, invalidPassword!);
+        var result = User.Create( _validCompanyId, userName, invalidPassword!);
 
         // Assert
         Assert.True(result.IsFailure);
@@ -100,7 +100,7 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userNameWithSpaces, password);
+        var result = User.Create(_validCompanyId, userNameWithSpaces, password);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -116,7 +116,7 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, password);
+        var result = User.Create(_validCompanyId, userName, password);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -132,7 +132,7 @@ public class UserTests
         var beforeCreation = DateTime.UtcNow;
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, password);
+        var result = User.Create(_validCompanyId, userName, password);
         var afterCreation = DateTime.UtcNow;
 
         // Assert
@@ -145,12 +145,12 @@ public class UserTests
     public void UpdateUserName_Should_Update_UserName_When_Valid()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var newUserName = _faker.Internet.UserName();
 
         // Act
-        user.UpdateUserName(newUserName);
+        user.ChangeUserName(newUserName);
 
         // Assert
         Assert.Equal(newUserName.Trim(), user.UserName);
@@ -164,14 +164,14 @@ public class UserTests
     public void UpdateUserName_Should_Throw_When_UserName_Is_Null_Or_Whitespace(string? invalidUserName)
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => user.UpdateUserName(invalidUserName!));
+        var domainResult = user.ChangeUserName(invalidUserName!);
         
-        Assert.Contains("UserName é obrigatório", exception.Message);
-        Assert.Equal("userName", exception.ParamName);
+        Assert.True(domainResult.IsFailure);
+        Assert.Contains("UserName é obrigatório", domainResult.Error);
     }
 
     [Theory]
@@ -181,13 +181,13 @@ public class UserTests
     public void UpdateUserName_Should_Throw_When_UserName_Has_Less_Than_3_Characters(string shortUserName)
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
 
         // Act & Assert
         // UpdateUserName não valida o tamanho mínimo, apenas se é null ou vazio
         // Mas vamos manter o teste para verificar o comportamento atual
-        user.UpdateUserName(shortUserName);
+        user.ChangeUserName(shortUserName);
         Assert.Equal(shortUserName.Trim(), user.UserName);
     }
 
@@ -195,12 +195,12 @@ public class UserTests
     public void UpdateUserName_Should_Trim_UserName()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var userNameWithSpaces = "  " + _faker.Internet.UserName() + "  ";
 
         // Act
-        user.UpdateUserName(userNameWithSpaces);
+        user.ChangeUserName(userNameWithSpaces);
 
         // Assert
         Assert.Equal(userNameWithSpaces.Trim(), user.UserName);
@@ -210,12 +210,12 @@ public class UserTests
     public void UpdatePassword_Should_Update_Password_When_Valid()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var newPassword = _faker.Internet.Password(10);
 
         // Act
-        var result = user.UpdatePassword(newPassword);
+        var result = user.ChangePassword(newPassword);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -230,14 +230,14 @@ public class UserTests
     public void UpdatePassword_Should_Fail_When_Password_Is_Null_Or_Whitespace(string? invalidPassword)
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var originalPassword = user.Password;
 
         // Act
         // Nota: Há um bug na implementação atual - UpdatePassword não retorna o Failure
         // Mas vamos testar o comportamento atual
-        var result = user.UpdatePassword(invalidPassword!);
+        var result = user.ChangePassword(invalidPassword!);
 
         // Assert
         // Devido ao bug, o resultado pode ser Success mesmo com password inválido
@@ -258,12 +258,12 @@ public class UserTests
     public void UpdatePassword_Should_Accept_Short_Passwords(string shortPassword)
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
 
         // Act
         // UpdatePassword não valida o tamanho mínimo, apenas se é null ou vazio
-        var result = user.UpdatePassword(shortPassword);
+        var result = user.ChangePassword(shortPassword);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -274,7 +274,7 @@ public class UserTests
     public void Activate_Should_Set_Active_To_True()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         user.Deactivate();
         Assert.False(user.Active);
@@ -290,7 +290,7 @@ public class UserTests
     public void Deactivate_Should_Set_Active_To_False()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         Assert.True(user.Active);
 
@@ -305,7 +305,7 @@ public class UserTests
     public void User_Should_Implement_IMultiTenantEntity()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
 
         // Act & Assert
@@ -317,14 +317,14 @@ public class UserTests
     public void User_Should_Allow_Multiple_UserName_Updates()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var firstUserName = _faker.Internet.UserName();
         var secondUserName = _faker.Internet.UserName();
 
         // Act
-        user.UpdateUserName(firstUserName);
-        user.UpdateUserName(secondUserName);
+        user.ChangeUserName(firstUserName);
+        user.ChangeUserName(secondUserName);
 
         // Assert
         Assert.Equal(secondUserName.Trim(), user.UserName);
@@ -334,14 +334,14 @@ public class UserTests
     public void User_Should_Allow_Multiple_Password_Updates()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var firstPassword = _faker.Internet.Password(10);
         var secondPassword = _faker.Internet.Password(12);
 
         // Act
-        var result1 = user.UpdatePassword(firstPassword);
-        var result2 = user.UpdatePassword(secondPassword);
+        var result1 = user.ChangePassword(firstPassword);
+        var result2 = user.ChangePassword(secondPassword);
 
         // Assert
         Assert.True(result1.IsSuccess);
@@ -353,7 +353,7 @@ public class UserTests
     public void User_Should_Allow_Activate_And_Deactivate_Multiple_Times()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
 
         // Act & Assert
@@ -378,7 +378,7 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, password);
+        var result = User.Create(_validCompanyId, userName, password);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -393,7 +393,7 @@ public class UserTests
         var password = "123456";
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, password);
+        var result = User.Create(_validCompanyId, userName, password);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -404,12 +404,12 @@ public class UserTests
     public void UpdateUserName_Should_Accept_UserName_With_Exactly_3_Characters()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var newUserName = "xyz";
 
         // Act
-        user.UpdateUserName(newUserName);
+        user.ChangeUserName(newUserName);
 
         // Assert
         Assert.Equal(newUserName, user.UserName);
@@ -419,12 +419,12 @@ public class UserTests
     public void UpdatePassword_Should_Accept_Password_With_Exactly_6_Characters()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var newPassword = "abcdef";
 
         // Act
-        var result = user.UpdatePassword(newPassword);
+        var result = user.ChangePassword(newPassword);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -435,17 +435,17 @@ public class UserTests
     public void User_Should_Preserve_Original_Values_When_Update_Fails()
     {
         // Arrange
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
         var originalUserName = user.UserName;
         var originalPassword = user.Password;
 
         // Act & Assert - Tentar atualizar com valor inválido
-        Assert.Throws<ArgumentException>(() => user.UpdateUserName(""));
+        var domainResult = user.ChangeUserName("");
         Assert.Equal(originalUserName, user.UserName);
 
         // UpdatePassword tem um bug - não retorna Failure, mas vamos testar o comportamento atual
-        var passwordResult = user.UpdatePassword("");
+        var passwordResult = user.ChangePassword("");
         // Devido ao bug, pode não falhar, mas vamos verificar
         if (passwordResult.IsFailure)
         {
@@ -457,7 +457,7 @@ public class UserTests
     public void User_Should_Have_Correct_Property_Types()
     {
         // Arrange & Act
-        var createResult = User.Create(_validId, _validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
+        var createResult = User.Create(_validCompanyId, _faker.Internet.UserName(), _faker.Internet.Password(8));
         var user = createResult.Value;
 
         // Assert
@@ -477,7 +477,7 @@ public class UserTests
         var password = _faker.Internet.Password(8);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, longUserName, password);
+        var result = User.Create(_validCompanyId, longUserName, password);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -492,7 +492,7 @@ public class UserTests
         var longPassword = _faker.Random.String2(200);
 
         // Act
-        var result = User.Create(_validId, _validCompanyId, userName, longPassword);
+        var result = User.Create(_validCompanyId, userName, longPassword);
 
         // Assert
         Assert.True(result.IsSuccess);

@@ -1,7 +1,8 @@
-﻿namespace AccountingOffice.Domain.Core.Common;
+﻿namespace AccountingOffice.Application.Infrastructure.Common;
 
 public class Result<T>
 {
+
     public T Value { get; }
     public string Error { get; }
     public bool IsSuccess { get; }
