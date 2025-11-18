@@ -1,5 +1,7 @@
 <Solution>
+  <Project Path="AccountingOffice.ApiService/AccountingOffice.ApiService.csproj" Id="3b82391e-7c74-4075-a243-8aa51334e322" />
   <Project Path="AccountingOffice.Application/AccountingOffice.Application.csproj" Id="1b8b2774-7fb7-49f2-9da1-eec0098e64e7" />
   <Project Path="AccountingOffice.Domain/AccountingOffice.Domain.csproj" />
+  <Project Path="AccountingOffice.Infrastructure/AccountingOffice.Infrastructure.csproj" Id="99958cc2-9693-4d5e-a461-5b37b5cfb9b9" />
   <Project Path="AccountOffice.Tests/AccountOffice.Tests.csproj" Id="d459bb09-d1c3-4072-beea-d5acc9284a0f" />
 </Solution>
