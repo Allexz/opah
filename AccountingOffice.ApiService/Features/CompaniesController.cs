@@ -113,7 +113,8 @@ public sealed class CompaniesController : ApiControllerBase
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> GetByDocumentAsync([FromRoute] string document, CancellationToken cancellationToken)
     {
-        var query = new GetCompanyByDocumentQuery(document);
+        var decodedDocument = Uri.UnescapeDataString(document);
+        var query = new GetCompanyByDocumentQuery(decodedDocument);
         var result = await ApplicationBus.SendQuery(query, cancellationToken);
 
         if (result.IsFailure || result.Value is null)

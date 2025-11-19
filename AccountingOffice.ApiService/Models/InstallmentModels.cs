@@ -39,3 +39,5 @@ public record InstallmentView(int InstallmentNumber,
                               DateTime? PaymentDate,
                               int EntryType);
 
+
+

@@ -42,3 +42,5 @@ public record AccountPayableView(Guid Id,
                                  int PayMethod,
                                  DateTime? PaymentDate);
 
+
+
