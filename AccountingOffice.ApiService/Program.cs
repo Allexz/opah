@@ -21,8 +21,7 @@ builder.Services.AddControllers()
 // Adicionar serviços de infraestrutura (DbContext, Repositories, Queries, CQRS)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// Adicionar Message Broker (RabbitMQ) - Comentado temporariamente para migrations
-// builder.Services.AddMessageBroker(builder.Configuration);
+builder.Services.AddMessageBroker(builder.Configuration);
 
 // Configurar CORS
 builder.Services.AddCors(options =>
@@ -41,7 +40,7 @@ builder.Services.AddCors(options =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 

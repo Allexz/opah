@@ -9,7 +9,7 @@ namespace AccountingOffice.Application.UseCases.Cia.QueryHandler;
 public class CompanyQueryHandler :
     IQueryHandler<GetCompanyByIdQuery, Result<CompanyResult?>>,
     IQueryHandler<GetCompanyByDocumentQuery, Result<CompanyResult?>>,
-    IQueryHandler<GetAllCompaniesQuery, Result<IEnumerable<CompanyResult?>>>
+    IQueryHandler<GetAllCompaniesQuery, Result<IEnumerable<CompanyResult>>>
 {
     private readonly ICompanyQuery _companyQuery;
 
@@ -20,13 +20,12 @@ public class CompanyQueryHandler :
 
     public async Task<Result<CompanyResult?>> Handle(GetCompanyByIdQuery query, CancellationToken cancellationToken)
     {
-        var companyId = new Guid(query.CompanyId.ToString().PadLeft(32, '0'));
-        var company = await _companyQuery.GetByIdAsync(companyId, cancellationToken);
+        var company = await _companyQuery.GetByIdAsync(query.CompanyId, cancellationToken);
 
         if (company is null)
             return Result<CompanyResult?>.Failure("Não foi localizado companhia para os parâmetros informados");
 
-        return Result<CompanyResult?>.Success( MapToCompanyResult(company));
+        return Result<CompanyResult?>.Success(MapToCompanyResult(company));
     }
 
     public async Task<Result<CompanyResult?>> Handle(GetCompanyByDocumentQuery query, CancellationToken cancellationToken)
@@ -36,14 +35,14 @@ public class CompanyQueryHandler :
         if (company is null)
             return Result<CompanyResult?>.Failure("Não foi localizada companhia para os parâmetros informados");
 
-        return Result<CompanyResult?>.Success( MapToCompanyResult(company));
+        return Result<CompanyResult?>.Success(MapToCompanyResult(company));
     }
 
-    public async Task<Result<IEnumerable<CompanyResult?>>> Handle(GetAllCompaniesQuery query, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<CompanyResult>>> Handle(GetAllCompaniesQuery query, CancellationToken cancellationToken)
     {
         var companies = await _companyQuery.GetAllActiveAsync(cancellationToken);
 
-        return Result<IEnumerable<CompanyResult?>>.Success(companies.Select(MapToCompanyResult));
+        return Result<IEnumerable<CompanyResult>>.Success(companies.Select(MapToCompanyResult));
     }
 
     private static CompanyResult MapToCompanyResult(Domain.Core.Aggregates.Company company)

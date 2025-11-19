@@ -1,4 +1,4 @@
-﻿using AccountingOffice.Application.Infrastructure.Common;
+﻿﻿﻿using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
@@ -16,12 +16,18 @@ public class UserCommandHandler :
 {
     private readonly IUserRepository _userRepository;
     private readonly IUserQuery _userQuery;
+    private readonly IApplicationBus _applicationBus;
 
-    public UserCommandHandler(IUserRepository userRepository, IUserQuery userQuery)
+    public UserCommandHandler(
+        IUserRepository userRepository, 
+        IUserQuery userQuery,
+        IApplicationBus applicationBus)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _userQuery = userQuery ?? throw new ArgumentNullException(nameof(userQuery));
+        _applicationBus = applicationBus ?? throw new ArgumentNullException(nameof(applicationBus));
     }
+    
     public async Task<Result<int>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
     {
         DomainResult<User> result = User.Create(
@@ -35,6 +41,11 @@ public class UserCommandHandler :
         }
 
         await _userRepository.CreateAsync(result.Value);
+        
+        // Publicar evento genérico para usuários
+        // Como não há evento específico para usuário, usamos um evento genérico
+        var @event = new object(); // Placeholder para evento futuro
+        
         return Result<int>.Success(result.Value.Id);
     }
 

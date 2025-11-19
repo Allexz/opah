@@ -5,18 +5,18 @@ services:
       context: .
       dockerfile: AccountingOffice.ApiService/Dockerfile
     depends_on:
-      accountoffice.database:
+      accountoffice-database:
         condition: service_healthy
-      accountoffice.rabbitmq:
+      accountoffice-rabbitmq:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
       - LC_ALL=en_US.UTF-8
       - LANG=en_US.UTF-8
-      - ConnectionStrings__DefaultConnection=Server=accountoffice.database,1433;Database=AccountingOfficeDB;User Id=sa;Password=Your_password123;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=accountoffice-database,1433;Database=AccountingOfficeDB;User Id=sa;Password=Your_password123;TrustServerCertificate=True;
       - DatabaseProvider=SqlServer
-      - RabbitMQ__Host=accountoffice.rabbitmq
+      - RabbitMQ__Host=accountoffice-rabbitmq
       - RabbitMQ__Port=5672
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
@@ -32,7 +32,7 @@ services:
       retries: 3
       start_period: 40s
 
-  accountoffice.database:
+  accountoffice-database:
     container_name: account_database
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
@@ -52,7 +52,7 @@ services:
       retries: 5
       start_period: 30s
 
-  accountoffice.rabbitmq:
+  accountoffice-rabbitmq:
     container_name: account_rabbitmq
     image: rabbitmq:3-management-alpine
     environment:

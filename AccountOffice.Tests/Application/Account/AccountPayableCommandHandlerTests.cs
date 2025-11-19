@@ -1,3 +1,4 @@
+using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
 using AccountingOffice.Application.UseCases.AccountPay.CommandHandler;
@@ -19,6 +20,7 @@ public class AccountPayableCommandHandlerTests
     private readonly IAccountPayableQuery _accountPayableQuery;
     private readonly IPersonQuery _personQuery;
     private readonly AccountPayableCommandHandler _handler;
+    private readonly IApplicationBus _applicationBus;
 
     public AccountPayableCommandHandlerTests()
     {
@@ -40,8 +42,9 @@ public class AccountPayableCommandHandlerTests
         _accountPayableRepository = A.Fake<IAccountPayableRepository>();
         _accountPayableQuery = A.Fake<IAccountPayableQuery>();
         _personQuery = A.Fake<IPersonQuery>();
+        _applicationBus = A.Fake<IApplicationBus>();
 
-        _handler = new AccountPayableCommandHandler(_accountPayableQuery, _accountPayableRepository, _personQuery);
+        _handler = new AccountPayableCommandHandler(_accountPayableQuery, _accountPayableRepository, _personQuery, _applicationBus);
     }
 
     [Fact]

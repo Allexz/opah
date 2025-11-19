@@ -1,4 +1,5 @@
-﻿using AccountingOffice.Application.Infrastructure.Common;
+﻿﻿﻿﻿﻿using AccountingOffice.Application.Events;
+using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
@@ -17,12 +18,20 @@ public class AccountPayableCommandHandler :
     private readonly IAccountPayableRepository _accountPayableRepository;
     private readonly IAccountPayableQuery _accountPayableQuery;
     private readonly IPersonQuery _personQuery;
-    public AccountPayableCommandHandler(IAccountPayableQuery accountPayableQuery, IAccountPayableRepository accountPayableRepository, IPersonQuery personQuery)
+    private readonly IApplicationBus _applicationBus;
+    
+    public AccountPayableCommandHandler(
+        IAccountPayableQuery accountPayableQuery, 
+        IAccountPayableRepository accountPayableRepository, 
+        IPersonQuery personQuery,
+        IApplicationBus applicationBus)
     {
         _accountPayableQuery = accountPayableQuery ?? throw new ArgumentException(nameof(accountPayableQuery));
         _accountPayableRepository = accountPayableRepository ?? throw new ArgumentException(nameof(accountPayableRepository));
         _personQuery = personQuery ?? throw new ArgumentException(nameof(personQuery));
+        _applicationBus = applicationBus ?? throw new ArgumentException(nameof(applicationBus));
     }
+    
     public async Task<Result<Guid>> Handle(CreateAccountPayableCommand command, CancellationToken cancellationToken)
     {
         Person<Guid>? person = await _personQuery.GetByIdAsync(command.SupplierId, command.TenantId);
@@ -45,8 +54,19 @@ public class AccountPayableCommandHandler :
             return Result<Guid>.Failure(domainResult.Error);
 
         await _accountPayableRepository.CreateAsync(domainResult.Value);
+        
+         var @event = new AccountPayableCreatedEvent(
+            domainResult.Value.Id,
+            domainResult.Value.TenantId,
+            domainResult.Value.Ammount,
+            domainResult.Value.IssueDate,
+            domainResult.Value.DueDate,
+            domainResult.Value.Description
+        );
+        
+         await _applicationBus.PublishEvent(@event, cancellationToken);
+        
         return Result<Guid>.Success(domainResult.Value.Id);
-
     }
 
     public async Task<Result<bool>> Handle(UpdateAccountPayableCommand command, CancellationToken cancellationToken)
@@ -64,6 +84,16 @@ public class AccountPayableCommandHandler :
         
         await _accountPayableRepository.UpdateAsync(accountPayable);
 
+        // Publicar evento de conta atualizada
+        var @event = new AccountUpdatedEvent(
+            accountPayable.Id,
+            accountPayable.TenantId,
+            accountPayable.Ammount,
+            DateTime.UtcNow
+        );
+        
+        await _applicationBus.PublishEvent(@event, cancellationToken);
+
         return Result<bool>.Success(true);
 
     }
@@ -77,6 +107,16 @@ public class AccountPayableCommandHandler :
         }
 
         await _accountPayableRepository.DeleteAsync(accountPayable.Id);
+
+        // Publicar evento de conta excluída (podemos usar o evento de atualização com valores zerados)
+        var @event = new AccountUpdatedEvent(
+            accountPayable.Id,
+            accountPayable.TenantId,
+            0, // Valor zerado para indicar exclusão
+            DateTime.UtcNow
+        );
+        
+        await _applicationBus.PublishEvent(@event, cancellationToken);
 
         return Result<bool>.Success(true);
     }

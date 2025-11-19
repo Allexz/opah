@@ -4,4 +4,4 @@ using AccountingOffice.Application.UseCases.Cia.Queries.Result;
 
 namespace AccountingOffice.Application.UseCases.Cia.Queries;
 
-public sealed record GetAllCompaniesQuery(int pageNumber, int pageSize): IQuery<Result< IEnumerable<CompanyResult?>>>;
+public sealed record GetAllCompaniesQuery(int PageNumber, int PageSize): IQuery<Result<IEnumerable<CompanyResult>>>;

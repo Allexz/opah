@@ -1,3 +1,4 @@
+using AccountingOffice.Application.Events;
 using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
@@ -14,19 +15,24 @@ namespace AccountingOffice.Application.UseCases.Account.CommandHandler;
 public class AccountCommandHandler :
     ICommandHandler<AddInstallmentCommand, Result<bool>>,
     ICommandHandler<DeleteInstallmentCommand, Result<bool>>,
-    ICommandHandler<ChangeInstallmentStatusCommand, Result<bool>>
+    ICommandHandler<ChangeInstallmentStatusCommand, Result<bool>>,
+    ICommandHandler<PayInstallmentCommand, Result<bool>>
 {
     private readonly IInstalmentRepository _instalmentRepository;
     private readonly IAccountPayableQuery _accountPayableQuery;
     private readonly IAccountReceivableQuery _accountReceivableQuery;
+    private readonly IApplicationBus _applicationBus;
 
-    public AccountCommandHandler(IInstalmentRepository instalmentRepository,
-                                 IAccountPayableQuery accountPayableQuery,
-                                 IAccountReceivableQuery accountReceivableQuery)
+    public AccountCommandHandler(
+        IInstalmentRepository instalmentRepository,
+        IAccountPayableQuery accountPayableQuery,
+        IAccountReceivableQuery accountReceivableQuery,
+        IApplicationBus applicationBus)
     {
         _instalmentRepository = instalmentRepository ?? throw new ArgumentException(nameof(instalmentRepository));
         _accountPayableQuery = accountPayableQuery ?? throw new ArgumentException(nameof(accountPayableQuery));
         _accountReceivableQuery = accountReceivableQuery ?? throw new ArgumentException(nameof(accountReceivableQuery));
+        _applicationBus = applicationBus ?? throw new ArgumentException(nameof(applicationBus));
     }
 
     public async Task<Result<bool>> Handle(AddInstallmentCommand command, CancellationToken cancellationToken)
@@ -102,6 +108,43 @@ public class AccountCommandHandler :
         if (changeResult.IsFailure)
             return Result<bool>.Failure(changeResult.Error);
 
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<bool>> Handle(PayInstallmentCommand command, CancellationToken cancellationToken)
+    {
+        Account<Guid>? account = await GetAccountByEntryType(command.AccountId, command.TenantId, EntryType.Debit, cancellationToken);
+        if (account is null)
+        {
+            account = await GetAccountByEntryType(command.AccountId, command.TenantId, EntryType.Credit, cancellationToken);
+            if (account is null)
+            {
+                return Result<bool>.Failure("Conta não encontrada.");
+            }
+        }
+
+        Installment? installment = account.Installments.FirstOrDefault(i => i.InstallmentNumber == command.InstallmentNumber);
+        if (installment is null)
+        {
+            return Result<bool>.Failure("Parcela não encontrada.");
+        }
+
+        // Marcar a parcela como paga
+        DomainResult payResult = installment.ChangeStatus(AccountStatus.Paid,installment.PaymentDate);
+        if (payResult.IsFailure)
+            return Result<bool>.Failure(payResult.Error);
+
+        // Publicar evento de parcela paga
+        var @event = new InstallmentPaidEvent(
+            command.AccountId,
+            command.TenantId,
+            command.InstallmentNumber,
+            command.PaymentAmount,
+            command.PaymentDate
+        );
+        
+        await _applicationBus.PublishEvent(@event, cancellationToken);
+        
         return Result<bool>.Success(true);
     }
 

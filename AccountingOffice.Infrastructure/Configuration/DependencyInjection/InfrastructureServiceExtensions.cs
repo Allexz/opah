@@ -28,6 +28,9 @@ public static class InfrastructureServiceExtensions
         // Registrar serviços da Application (CQRS)
         services.AddApplicationServices();
 
+        // Registrar handlers de eventos
+        services.AddEventHandlers();
+
         return services;
     }
 }

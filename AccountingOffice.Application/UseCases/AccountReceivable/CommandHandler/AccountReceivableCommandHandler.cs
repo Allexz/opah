@@ -1,4 +1,5 @@
-﻿using AccountingOffice.Application.Infrastructure.Common;
+﻿﻿﻿﻿﻿using AccountingOffice.Application.Events;
+using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
@@ -17,13 +18,20 @@ public class AccountReceivableCommandHandler :
     private readonly IAccountReceivableRepository _accountReceivableRepository;
     private readonly IAccountReceivableQuery _accountReceivableQuery;
     private readonly IPersonQuery _personQuery;
+    private readonly IApplicationBus _applicationBus;
 
-    public AccountReceivableCommandHandler(IAccountReceivableRepository accountReceivableRepository, IAccountReceivableQuery accountReceivableQuery, IPersonQuery personQuery)
+    public AccountReceivableCommandHandler(
+        IAccountReceivableRepository accountReceivableRepository, 
+        IAccountReceivableQuery accountReceivableQuery, 
+        IPersonQuery personQuery,
+        IApplicationBus applicationBus)
     {
         _accountReceivableRepository = accountReceivableRepository ?? throw new ArgumentNullException(nameof(accountReceivableRepository));
         _accountReceivableQuery = accountReceivableQuery ?? throw new ArgumentNullException(nameof(accountReceivableQuery));
         _personQuery = personQuery ?? throw new ArgumentNullException(nameof(personQuery));
+        _applicationBus = applicationBus ?? throw new ArgumentNullException(nameof(applicationBus));
     }
+    
     public async Task<Result<Guid>> Handle(CreateAccountReceivableCommand command, CancellationToken cancellationToken)
     {
         Person<Guid>? person = await _personQuery.GetByIdAsync(command.TenantId, command.CustomerId);
@@ -49,6 +57,18 @@ public class AccountReceivableCommandHandler :
         }
 
         await _accountReceivableRepository.CreateAsync(domainResult.Value);
+        
+         var @event = new AccountReceivableCreatedEvent(
+            domainResult.Value.Id,
+            domainResult.Value.TenantId,
+            domainResult.Value.Ammount,
+            domainResult.Value.IssueDate,
+            domainResult.Value.DueDate,
+            domainResult.Value.Description
+        );
+        
+         await _applicationBus.PublishEvent(@event, cancellationToken);
+        
         return Result<Guid>.Success(domainResult.Value.Id);
     }
 
@@ -86,6 +106,16 @@ public class AccountReceivableCommandHandler :
 
         await _accountReceivableRepository.UpdateAsync(accountReceivable);
 
+        // Publicar evento de conta atualizada
+        var @event = new AccountUpdatedEvent(
+            accountReceivable.Id,
+            accountReceivable.TenantId,
+            accountReceivable.Ammount,
+            DateTime.UtcNow
+        );
+        
+        await _applicationBus.PublishEvent(@event, cancellationToken);
+
         return Result<bool>.Success(true);
 
     }
@@ -99,6 +129,17 @@ public class AccountReceivableCommandHandler :
         }
 
         await _accountReceivableRepository.DeleteAsync(accountReceivable.Id);
+
+        // Publicar evento de conta excluída (podemos usar o evento de atualização com valores zerados)
+        var @event = new AccountUpdatedEvent(
+            accountReceivable.Id,
+            accountReceivable.TenantId,
+            0, // Valor zerado para indicar exclusão
+            DateTime.UtcNow
+        );
+        
+        await _applicationBus.PublishEvent(@event, cancellationToken);
+
         return Result<bool>.Success(true);
 
     }

@@ -4,4 +4,4 @@ using AccountingOffice.Application.UseCases.Cia.Queries.Result;
 
 namespace AccountingOffice.Application.UseCases.Cia.Queries;
 
-public sealed record class GetCompanyByIdQuery(int CompanyId) : IQuery<Result<CompanyResult?>>;
+public sealed record class GetCompanyByIdQuery(Guid CompanyId) : IQuery<Result<CompanyResult?>>;
