@@ -44,6 +44,11 @@ public class LegalPerson : Person<Guid>
     {
         LegalName = legalName;
     }
+
+    private LegalPerson()
+    {
+        
+    }
     #endregion
 
     #region Validação

@@ -7,8 +7,12 @@ using AccountingOffice.Domain.Core.Aggregates;
 
 namespace AccountingOffice.Application.UseCases.AccountPay.QueryHandler;
 
-public class AccountPayableQueryHandler:
-    IQueryHandler<GetAccountPayByTenantIdQuery,Result<IEnumerable<AccountPayableResult>>>
+public class AccountPayableQueryHandler :
+    IQueryHandler<GetAccountPayByTenantIdQuery, Result<IEnumerable<AccountPayableResult>>>,
+    IQueryHandler<GetAccountPayByIdQuery, Result<AccountPayableResult?>>,
+    IQueryHandler<GetAccountPayByIssueDateQuery, Result<IEnumerable<AccountPayableResult>>>,
+        IQueryHandler<GetAccountPayByRelatedPartQuery, Result<IEnumerable<AccountPayableResult>>>
+
 {
     private readonly IAccountPayableQuery _accountPayableQuery;
 
@@ -19,7 +23,7 @@ public class AccountPayableQueryHandler:
 
     public async Task<Result<IEnumerable<AccountPayableResult>>> Handle(GetAccountPayByTenantIdQuery request, CancellationToken cancellationToken)
     {
-        IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByTenantIdAsync(request.TenantId, request.PageNum,request.PageSize, cancellationToken);
+        IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByTenantIdAsync(request.TenantId, request.PageNum, request.PageSize, cancellationToken);
         if (!accounts.Any())
         {
             return Result<IEnumerable<AccountPayableResult>>.Failure("Não foram localizadas contas a pagar");
@@ -29,7 +33,7 @@ public class AccountPayableQueryHandler:
 
     public async Task<Result<IEnumerable<AccountPayableResult>>> Handle(GetAccountPayByRelatedPartQuery request, CancellationToken cancellationToken)
     {
-        IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByRelatedPartyId(request.TenantId,request.TenantId,request.PageNum,request.PageSize, cancellationToken);
+        IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByRelatedPartyId(request.TenantId, request.TenantId, request.PageNum, request.PageSize, cancellationToken);
         if (!accounts.Any())
         {
             return Result<IEnumerable<AccountPayableResult>>.Failure("Não foram localizadas contas a pagar para o parceiro informado");
@@ -39,7 +43,7 @@ public class AccountPayableQueryHandler:
 
     public async Task<Result<IEnumerable<AccountPayableResult>>> Handle(GetAccountPayByIssueDateQuery request, CancellationToken cancellationToken)
     {
-        IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByIssueDateAsync(request.TenantId, request.StartDate,request.EndDate,request.PageNum,request.PageSize, cancellationToken);
+        IEnumerable<AccountPayable> accounts = await _accountPayableQuery.GetByIssueDateAsync(request.TenantId, request.StartDate, request.EndDate, request.PageNum, request.PageSize, cancellationToken);
         if (!accounts.Any())
         {
             return Result<IEnumerable<AccountPayableResult>>.Failure("Não foram localizadas contas a pagar para o período informado");
@@ -49,12 +53,12 @@ public class AccountPayableQueryHandler:
 
     public async Task<Result<AccountPayableResult?>> Handle(GetAccountPayByIdQuery request, CancellationToken cancellationToken)
     {
-        AccountPayable? account = await _accountPayableQuery.GetByIdAsync(request.Id, request.TenantId,cancellationToken);
+        AccountPayable? account = await _accountPayableQuery.GetByIdAsync(request.Id, request.TenantId, cancellationToken);
         if (account is null)
         {
             return Result<AccountPayableResult?>.Failure("Conta a pagar não localizada");
         }
-        return Result<AccountPayableResult?>.Success( MapToAccountPayableResult(account));
+        return Result<AccountPayableResult?>.Success(MapToAccountPayableResult(account));
     }
 
     private static AccountPayableResult MapToAccountPayableResult(AccountPayable account)

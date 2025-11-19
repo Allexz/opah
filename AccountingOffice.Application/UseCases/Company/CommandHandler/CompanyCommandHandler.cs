@@ -1,4 +1,4 @@
-﻿using AccountingOffice.Application.Infrastructure.Common;
+﻿﻿﻿using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
@@ -17,11 +17,14 @@ public class CompanyCommandHandler :
     private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyQuery _companyQuery;
 
-    public CompanyCommandHandler(ICompanyRepository companyRepository, ICompanyQuery companyQuery)
+    public CompanyCommandHandler(
+        ICompanyRepository companyRepository, 
+        ICompanyQuery companyQuery)
     {
         _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
         _companyQuery = companyQuery ?? throw new ArgumentNullException(nameof(companyQuery));
     }
+    
     public async Task<Result<Guid>> Handle(CreateCompanyCommand command, CancellationToken cancellationToken)
     {
         DomainResult<Company> cia = Company.Create(Guid.NewGuid(),
@@ -34,6 +37,9 @@ public class CompanyCommandHandler :
             return Result<Guid>.Failure(cia.Error);
 
         await _companyRepository.CreateAsync(cia.Value);
+        
+        var @event = new object();
+        
         return Result<Guid>.Success(cia.Value.Id);
     }
 

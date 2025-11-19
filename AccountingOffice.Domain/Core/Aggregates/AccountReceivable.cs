@@ -32,6 +32,8 @@ public class AccountReceivable : Account<Guid>
         ReceivedDate = receivedDate;
     }
 
+    private AccountReceivable() { }
+
     #endregion
 
     #region Validação

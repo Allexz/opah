@@ -1,4 +1,4 @@
-﻿using AccountingOffice.Application.Infrastructure.Common;
+﻿﻿﻿using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
@@ -16,11 +16,16 @@ public class LegalPersonCommandHandler :
 {
     private readonly ILegalPersonRepository _legalPersonRepository;
     private readonly ILegalPersonQuery _legalPersonQuery;
+    private readonly IApplicationBus _applicationBus;
 
-    public LegalPersonCommandHandler(ILegalPersonRepository legalPersonRepository, ILegalPersonQuery legalPersonQuery)
+    public LegalPersonCommandHandler(
+        ILegalPersonRepository legalPersonRepository, 
+        ILegalPersonQuery legalPersonQuery,
+        IApplicationBus applicationBus)
     {
         _legalPersonRepository = legalPersonRepository ?? throw new ArgumentNullException(nameof(legalPersonRepository));
         _legalPersonQuery = legalPersonQuery ?? throw new ArgumentNullException(nameof(legalPersonQuery));
+        _applicationBus = applicationBus ?? throw new ArgumentNullException(nameof(applicationBus));
     }
 
     public async Task<Result<Guid>> Handle(CreateLegalPersonCommand command, CancellationToken cancellationToken)
@@ -38,6 +43,11 @@ public class LegalPersonCommandHandler :
             return Result<Guid>.Failure(domainResult.Error);
 
         await _legalPersonRepository.CreateAsync(domainResult.Value);
+        
+        // Publicar evento genérico para pessoas jurídicas
+        // Como não há evento específico para pessoa jurídica, usamos um evento genérico
+        var @event = new object(); // Placeholder para evento futuro
+        
         return Result<Guid>.Success(domainResult.Value.Id);
     }
 

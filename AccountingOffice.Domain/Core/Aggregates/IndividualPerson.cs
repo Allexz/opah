@@ -9,6 +9,7 @@ namespace AccountingOffice.Domain.Core.Aggregates;
 /// </summary>
 public class IndividualPerson : Person<Guid>
 {
+
     #region Propriedades
     public MaritalStatus MaritalStatus { get; private set; }
 
@@ -45,6 +46,11 @@ public class IndividualPerson : Person<Guid>
             throw new ArgumentException("CPF inválido.", nameof(document));
 
         MaritalStatus = maritalStatus;
+    }
+
+    private IndividualPerson()
+    {
+        
     }
 
     #endregion

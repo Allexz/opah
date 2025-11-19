@@ -1,4 +1,4 @@
-﻿using AccountingOffice.Application.Infrastructure.Common;
+﻿﻿﻿using AccountingOffice.Application.Infrastructure.Common;
 using AccountingOffice.Application.Infrastructure.ServicesBus.Interfaces;
 using AccountingOffice.Application.Interfaces.Queries;
 using AccountingOffice.Application.Interfaces.Repositories;
@@ -16,12 +16,18 @@ public class IndividualPersonCommandHandler :
 {
     private readonly IIndividualPersonRepository _individualPersonRepository;
     private readonly IIndividualPersonQuery _individualPersonQuery;
+    private readonly IApplicationBus _applicationBus;
 
-    public IndividualPersonCommandHandler(IIndividualPersonRepository individualPersonRepository, IIndividualPersonQuery individualPersonQuery)
+    public IndividualPersonCommandHandler(
+        IIndividualPersonRepository individualPersonRepository, 
+        IIndividualPersonQuery individualPersonQuery,
+        IApplicationBus applicationBus)
     {
         _individualPersonRepository = individualPersonRepository ?? throw new ArgumentNullException(nameof(individualPersonRepository));
         _individualPersonQuery = individualPersonQuery ?? throw new ArgumentNullException(nameof(individualPersonQuery));
+        _applicationBus = applicationBus ?? throw new ArgumentNullException(nameof(applicationBus));
     }
+    
     public async Task<Result<Guid>> Handle(CreateIndividualPersonCommand command, CancellationToken cancellationToken)
     {
         DomainResult<IndividualPerson> domainResult = IndividualPerson.Create(Guid.NewGuid(),
@@ -37,6 +43,11 @@ public class IndividualPersonCommandHandler :
             return Result<Guid>.Failure(domainResult.Error);
 
         await _individualPersonRepository.CreateAsync(domainResult.Value);
+        
+        // Publicar evento genérico para pessoas físicas
+        // Como não há evento específico para pessoa física, usamos um evento genérico
+        var @event = new object(); // Placeholder para evento futuro
+        
         return Result<Guid>.Success(domainResult.Value.Id);
     }
 
