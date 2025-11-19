@@ -5,6 +5,7 @@ using AccountingOffice.Application.UseCases.Cia.Commands;
 using AccountingOffice.Domain.Core.Aggregates;
 using Bogus;
 using FakeItEasy;
+using Microsoft.Extensions.Logging;
 
 namespace AccountOffice.Tests.Application.Person;
 
@@ -15,6 +16,7 @@ public class CompanyCommandHandlerTests
     private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyQuery _companyQuery;
     private readonly CompanyCommandHandler _handler;
+    private readonly ILogger<CompanyCommandHandler> _logger;
 
     public CompanyCommandHandlerTests()
     {
@@ -23,8 +25,9 @@ public class CompanyCommandHandlerTests
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyQuery = A.Fake<ICompanyQuery>();
+        _logger = A.Fake<ILogger<CompanyCommandHandler>>();
 
-        _handler = new CompanyCommandHandler(_companyRepository, _companyQuery);
+        _handler = new CompanyCommandHandler(_companyRepository, _companyQuery,_logger);
     }
 
     private Company CreateValidCompany()

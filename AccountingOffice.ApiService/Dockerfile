@@ -1,20 +1,15 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# These ARGs allow for swapping out the base used to make the final image when debugging from VS
+# See https://aka.ms/customizecontainer to learn how to customize your debug container
 ARG LAUNCHING_FROM_VS
-# This sets the base image for final, but only if LAUNCHING_FROM_VS has been defined
 ARG FINAL_BASE_IMAGE=${LAUNCHING_FROM_VS:+aotdebug}
 
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# Stage usada apenas no debug rápido do Visual Studio
 FROM mcr.microsoft.com/dotnet/nightly/aspnet:10.0-alpine AS base
-# Install wget for healthcheck
 RUN apk add --no-cache wget
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 8080 8081
 
-# This stage is used to build the service project
+# Build
 FROM mcr.microsoft.com/dotnet/nightly/sdk:10.0-alpine AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -24,25 +19,40 @@ COPY . .
 WORKDIR "/src/AccountingOffice.ApiService"
 RUN dotnet build "./AccountingOffice.ApiService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# Publish
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./AccountingOffice.ApiService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
+RUN dotnet publish "./AccountingOffice.ApiService.csproj" \
+    -c $BUILD_CONFIGURATION \
+    -o /app/publish \
+    /p:UseAppHost=true
 
-# This stage is used as the base for the final stage when launching from VS to support debugging in regular mode (Default when not using the Debug configuration)
+# Stage de debug com gdb (Visual Studio)
 FROM base AS aotdebug
 USER root
-# Install GDB to support native debugging
-RUN apk update \
-    && apk add gdb
+RUN apk update && apk add gdb
 USER app
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
-FROM ${FINAL_BASE_IMAGE:-mcr.microsoft.com/dotnet/nightly/runtime-deps:10.0-alpine} AS final
-# Install wget for healthcheck
-RUN apk add --no-cache wget
+# =========================================
+# STAGE FINAL – agora sobe 100%
+# =========================================
+FROM mcr.microsoft.com/dotnet/nightly/aspnet:10.0-alpine AS final
+
+# Instala ICU completo (obrigatório no .NET 10 nightly Alpine)
+RUN apk add --no-cache \
+    icu-libs \
+    icu-data-full \
+    wget
+
+# (Opcional) Define cultura invariante se quiser remover ICU completamente
+# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 8080 8081
+
 COPY --from=publish /app/publish .
+
+# Debug útil: mostra que o .NET e ICU estão instalados
+RUN dotnet --info
+
 ENTRYPOINT ["./AccountingOffice.ApiService"]
