@@ -28,3 +28,5 @@ public record IndividualCollectionFilter(Guid TenantId,
                                          int PageNumber = 1,
                                          int PageSize = 20);
 
+
+

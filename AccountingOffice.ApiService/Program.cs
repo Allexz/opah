@@ -1,3 +1,4 @@
+using AccountingOffice.ApiService.Middleware;
 using AccountingOffice.Infrastructure.Configuration.DependencyInjection;
 using AccountingOffice.Infrastructure.Data;
 using AccountingOffice.Infrastructure.Logging;
@@ -43,6 +44,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Middleware de tratamento de exceções global (deve ser o primeiro)
+app.UseGlobalExceptionHandler();
 
 // Configurar pipeline HTTP
 if (app.Environment.IsDevelopment())

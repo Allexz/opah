@@ -23,3 +23,5 @@ public record CompanyView(Guid Id,
                           bool Active,
                           DateTime CreatedAt);
 
+
+

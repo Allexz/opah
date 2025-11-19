@@ -30,7 +30,7 @@ public class CompanyQueryHandler :
 
     public async Task<Result<CompanyResult?>> Handle(GetCompanyByDocumentQuery query, CancellationToken cancellationToken)
     {
-        var company = await _companyQuery.GetByDocumentAsync(query.Document, cancellationToken);
+        var company = await _companyQuery.GetByDocumentAsync(query.Document.Trim(), cancellationToken);
 
         if (company is null)
             return Result<CompanyResult?>.Failure("Não foi localizada companhia para os parâmetros informados");
