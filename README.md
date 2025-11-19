@@ -2,7 +2,8 @@
 
 Sistema de gestão contábil para escritórios contábeis - desenvolvido como prova prática para a Opah.  
 **Requisitos não funcionais**  
-Um comerciante precisa controlar o seu fluxo de caixa diário com os lançamentos(débitos e créditos), também precisa de um relatório que disponibilize o saldo diário consolidado.
+Um comerciante precisa controlar o seu fluxo de caixa diário com os lançamentos(débitos e créditos), também precisa de um relatório que disponibilize o saldo diário consolidado.  
+A implementação do relatório está em conclusão, assim como uma maior cobertura de testes. O rabalho continua sendo executado.
 
 
 ## 🚀 Tecnologias Utilizadas
