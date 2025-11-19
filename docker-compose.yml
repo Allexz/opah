@@ -1,14 +1,13 @@
 ﻿services:
   accountingoffice-apiservice:
-    image: ${DOCKER_REGISTRY-}accountingofficeapiservice
+    container_name: accountingoffice-apiservice
+    image: accountingofficeapiservice
     build:
       context: .
       dockerfile: AccountingOffice.ApiService/Dockerfile
     depends_on:
-      accountoffice-database:
-        condition: service_healthy
-      accountoffice-rabbitmq:
-        condition: service_healthy
+      - accountoffice-database
+      - accountoffice-rabbitmq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
@@ -19,7 +18,7 @@
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
     ports:
-      - "5000:8080"
+      - "5088:8080"
     networks:
       - accountingoffice-network
     restart: unless-stopped
@@ -46,10 +45,10 @@
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Password123 -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Password123 -Q \"SELECT 1\" || exit 1"]
-      interval: 20s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
+      interval: 30s
+      timeout: 20s
+      retries: 10
+      start_period: 120s
 
   accountoffice-rabbitmq:
     container_name: account_rabbitmq
