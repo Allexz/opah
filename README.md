@@ -3,7 +3,37 @@
 Sistema de gestão contábil para escritórios contábeis - desenvolvido como prova prática para a Opah.  
 **Requisitos não funcionais**  
 Um comerciante precisa controlar o seu fluxo de caixa diário com os lançamentos(débitos e créditos), também precisa de um relatório que disponibilize o saldo diário consolidado.  
-A implementação do relatório está em conclusão, assim como uma maior cobertura de testes. O trabalho continua sendo executado.
+Foi utilizada containerização (DOCKER) para a aplicação, e .NET 10, ainda não temos a versão oficial no DOCKERHUB, portanto utilizei a versão nightly.
+
+## Utilização  
+
+### RabbitMQ -  
+http://localhost:15672  
+usuário: guest  
+senha: guest  
+
+## AccountingOffice.Api  
+http://localhost:5088/swagger  
+O recurso MIGRATIONS cria em sua execução:  
+
+Company  
+Document: 48.245.009/0001-99  
+Name: Microworkers do Brasil  
+Email: cia@microworkes.com.br  
+Phone: (27)90004-5444  
+
+User  
+CompanyId: O Id da empresa acima  
+UserName: Alexandre  
+Password: Abcd1234****  
+
+  ### Próximos passos  
+
+  1. Implementação da autenticação e restrição por usuário;
+  2. Aumentar a cobertura dos testes;
+  3. Implementação da interface do Elastisearch;
+  4. Implementação de regras de negócios mais próximas da realidade (eg. rúbricas de contabilidade).
+
 
 
 ## 🚀 Tecnologias Utilizadas
@@ -15,7 +45,7 @@ A implementação do relatório está em conclusão, assim como uma maior cobert
 - **RabbitMQ** - Mensageria e comunicação assíncrona
 - **SQL Server** - Banco de dados relacional
 - **Serilog** - Logging avançado
-- **Elasticsearch** - Indexação e busca de logs
+- **Elasticsearch** - Indexação e busca de logs (a implementar)
 
 ### Arquitetura
 - **Domain-Driven Design (DDD)**
