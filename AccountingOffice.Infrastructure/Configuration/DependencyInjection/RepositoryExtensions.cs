@@ -1,4 +1,5 @@
 using AccountingOffice.Application.Interfaces.Repositories;
+using AccountingOffice.Infrastructure.Data.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AccountingOffice.Infrastructure.Configuration.DependencyInjection;
@@ -15,16 +16,16 @@ public static class RepositoryExtensions
     {
         // Nota: As implementações concretas dos repositórios devem ser criadas
         // na camada Infrastructure/Data/Repositories
-        
+
         // Quando as implementações estiverem prontas, descomente e ajuste:
-        
-        // services.AddScoped<IAccountPayableRepository, AccountPayableRepository>();
-        // services.AddScoped<IAccountReceivableRepository, AccountReceivableRepository>();
-        // services.AddScoped<ICompanyRepository, CompanyRepository>();
-        // services.AddScoped<IIndividualPersonRepository, IndividualPersonRepository>();
-        // services.AddScoped<IInstalmentRepository, InstalmentRepository>();
-        // services.AddScoped<ILegalPersonRepository, LegalPersonRepository>();
-        // services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddScoped<IAccountPayableRepository, AccountPayableRepository>();
+        services.AddScoped<IAccountReceivableRepository, AccountReceivableRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IIndividualPersonRepository, IndividualPersonRepository>();
+        services.AddScoped<IInstalmentRepository, InstalmentRepository>();
+        services.AddScoped<ILegalPersonRepository, LegalPersonRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

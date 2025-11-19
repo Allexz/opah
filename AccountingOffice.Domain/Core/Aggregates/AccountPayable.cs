@@ -40,6 +40,8 @@ public class AccountPayable : Account<Guid>
         PayMethod = payMethod;
         PaymentDate = paymentDate;
     }
+
+    private AccountPayable() { }
     #endregion
 
     #region Validação

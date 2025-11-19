@@ -19,10 +19,16 @@ public class AccountingOfficeDbContext : DbContext
 
     public DbSet<Company> Companies { get; set; }
     public DbSet<User> Users { get; set; }
-    public DbSet<IndividualPerson> IndividualPersons { get; set; }
-    public DbSet<LegalPerson> LegalPersons { get; set; }
+    public DbSet<Person<Guid>> Persons { get; set; }
+   
     public DbSet<AccountPayable> AccountsPayable { get; set; }
     public DbSet<AccountReceivable> AccountsReceivable { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(warnings =>
+           warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -59,7 +59,7 @@ public class AccountReceivableConfiguration : IEntityTypeConfiguration<AccountRe
 
         builder.OwnsMany(ar => ar.Installments, installment =>
         {
-            installment.ToTable("Installments");
+            installment.ToTable("InstallmentsReceivable");
 
             installment.WithOwner()
                 .HasForeignKey("AccountId");

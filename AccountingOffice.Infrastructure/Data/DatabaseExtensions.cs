@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,5 +61,16 @@ public static class DatabaseExtensions
         });
 
         return services;
+    }
+
+    public static IApplicationBuilder UseApplicationDatabase(this IApplicationBuilder app)
+    {
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AccountingOfficeDbContext>();
+            context.Database.Migrate();
+        }
+        return app;
+
     }
 }

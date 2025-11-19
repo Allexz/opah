@@ -41,7 +41,7 @@ public abstract class Account<TId> : IMultiTenantEntity<TId>
         Status = status;
         RelatedParty = relatedParty;
     }
-
+    protected Account() { }
     protected static DomainResult ValidateAccountParameters(TId tenantId,
                                                       string description,
                                                       decimal ammount,

@@ -1,0 +1,86 @@
+services:
+  accountingoffice.apiservice:
+    image: ${DOCKER_REGISTRY-}accountingofficeapiservice
+    build:
+      context: .
+      dockerfile: AccountingOffice.ApiService/Dockerfile
+    depends_on:
+      accountoffice.database:
+        condition: service_healthy
+      accountoffice.rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - LC_ALL=en_US.UTF-8
+      - LANG=en_US.UTF-8
+      - ConnectionStrings__DefaultConnection=Server=accountoffice.database,1433;Database=AccountingOfficeDB;User Id=sa;Password=Your_password123;TrustServerCertificate=True;
+      - DatabaseProvider=SqlServer
+      - RabbitMQ__Host=accountoffice.rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+    networks:
+      - accountingoffice-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  accountoffice.database:
+    container_name: account_database
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      - accountingoffice-network
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "Your_password123", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  accountoffice.rabbitmq:
+    container_name: account_rabbitmq
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI port
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-logs:/var/log/rabbitmq
+    networks:
+      - accountingoffice-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  accountingoffice-network:
+    driver: bridge
+
+volumes:
+  mssql-data:
+    driver: local
+  rabbitmq-data:
+    driver: local
+  rabbitmq-logs:
+    driver: local

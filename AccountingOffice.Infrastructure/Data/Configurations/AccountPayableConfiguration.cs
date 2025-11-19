@@ -52,7 +52,7 @@ public class AccountPayableConfiguration : IEntityTypeConfiguration<AccountPayab
 
         builder.OwnsMany(ap => ap.Installments, installment =>
         {
-            installment.ToTable("Installments");
+            installment.ToTable("InstallmentsPayable");
 
             installment.WithOwner()
                 .HasForeignKey("AccountId");

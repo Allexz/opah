@@ -4,4 +4,7 @@
   <Project Path="AccountingOffice.Domain/AccountingOffice.Domain.csproj" />
   <Project Path="AccountingOffice.Infrastructure/AccountingOffice.Infrastructure.csproj" Id="99958cc2-9693-4d5e-a461-5b37b5cfb9b9" />
   <Project Path="AccountOffice.Tests/AccountOffice.Tests.csproj" Id="d459bb09-d1c3-4072-beea-d5acc9284a0f" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
 </Solution>

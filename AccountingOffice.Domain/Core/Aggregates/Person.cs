@@ -8,10 +8,10 @@ namespace AccountingOffice.Domain.Core.Aggregates;
 public abstract class Person<TId> : IMultiTenantEntity<Guid>
 {
     #region Propriedades
-    public TId Id { get; protected set; }
+    public TId Id { get; protected set; } = default!;
     public Guid TenantId { get; protected set; }
-    public string Name { get; private set; }
-    public string Document { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Document { get; private set; } = string.Empty;
     public PersonType Type { get; private set; }
 
     private DateTime _createdAt;
@@ -20,8 +20,8 @@ public abstract class Person<TId> : IMultiTenantEntity<Guid>
         get => _createdAt;
         set => _createdAt = DateTime.UtcNow;
     }
-    public string Email { get; private set; }
-    public string Phone { get; private set; }
+    public string Email { get; private set; } = string.Empty;
+    public string Phone { get; private set; } = string.Empty;
     public bool Active { get; set; }
     #endregion
 
