@@ -11,7 +11,7 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-      - ConnectionStrings__DefaultConnection=Server=accountoffice-database,1433;Database=AccountingOfficeDB;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;MultipleActiveResultSets=true
+      - ConnectionStrings__DefaultConnection=Server=accountoffice-database,1433;Database=AccountingOfficeDB;User Id=sa;Password=Your_password123;TrustServerCertificate=True;MultipleActiveResultSets=true
       - DatabaseProvider=SqlServer
       - RabbitMQ__Host=accountoffice-rabbitmq
       - RabbitMQ__Port=5672
@@ -33,7 +33,7 @@
     container_name: account_database
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "YourStrong@Password123"
+      SA_PASSWORD: "Your_password123"
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Developer"
     ports:
@@ -44,7 +44,7 @@
       - accountingoffice-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Password123 -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Password123 -Q \"SELECT 1\" || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_password123 -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Your_password123 -Q \"SELECT 1\" || exit 1"]
       interval: 30s
       timeout: 20s
       retries: 10

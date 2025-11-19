@@ -27,3 +27,4 @@ public sealed record DailyConsolidationData(
     int PayableCount,
     int ReceivableCount);
 
+

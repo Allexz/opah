@@ -9,3 +9,4 @@ public record DailyConsolidationView(
     int PayableCount,
     int ReceivableCount);
 
+

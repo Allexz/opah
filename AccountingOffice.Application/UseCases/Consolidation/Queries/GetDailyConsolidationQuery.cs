@@ -6,3 +6,4 @@ namespace AccountingOffice.Application.UseCases.Consolidation.Queries;
 
 public sealed record GetDailyConsolidationQuery(Guid TenantId, DateTime Date) : IQuery<Result<DailyConsolidationResult?>>;
 
+
