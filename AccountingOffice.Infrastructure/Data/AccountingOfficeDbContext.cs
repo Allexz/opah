@@ -46,11 +46,39 @@ public class AccountingOfficeDbContext : DbContext
             ConfigureSqlServer(modelBuilder);
         }
 
-        //// Configuração específica para PostgreSQL
-        //if (Database.IsNpgsql())
-        //{
-        //    ConfigurePostgreSQL(modelBuilder);
-        //}
+        // Dados iniciais - Company
+        var companyResult = Company.Create(
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            "Microworkers do Brasil",
+            "48.245.009/0001-99",
+            "cia@microworkes.com.br",
+            "(27)90004-5444",
+            true);
+        
+        if (companyResult.IsSuccess)
+        {
+            modelBuilder.Entity<Company>().HasData(companyResult.Value);
+        }
+
+        // Dados iniciais - User
+        var userResult = User.Create(
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            "Alexandre",
+            "Abcd1234****");
+            
+        if (userResult.IsSuccess)
+        {
+            // Precisamos criar um objeto anônimo com as propriedades que podem ser definidas
+            modelBuilder.Entity<User>().HasData(new
+            {
+                Id = 1,
+                TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                UserName = "Alexandre",
+                Password = "Abcd1234****",
+                Active = true,
+                CreatedAt = new DateTime(2025, 1, 1)
+            });
+        }
     }
 
     private void ConfigureGlobalSettings(ModelBuilder modelBuilder)

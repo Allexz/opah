@@ -4,6 +4,7 @@ using AccountingOffice.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccountingOffice.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AccountingOfficeDbContext))]
-    partial class AccountingOfficeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251119185017_AddInitialCompanyAndUser")]
+    partial class AddInitialCompanyAndUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

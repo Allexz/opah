@@ -26,6 +26,7 @@ public static class QueryServiceExtensions
         services.AddScoped<ILegalPersonQuery, LegalPersonQuery>();
         services.AddScoped<IPersonQuery, PersonQuery>();
         services.AddScoped<IUserQuery, UserQuery>();
+        services.AddScoped<IDailyConsolidationQuery, DailyConsolidationQuery>();
 
         return services;
     }

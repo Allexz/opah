@@ -42,3 +42,5 @@ public record AccountReceivableView(Guid Id,
                                     string InvoiceNumber,
                                     DateTime? ReceivedDate);
 
+
+

@@ -9,6 +9,9 @@ using AccountingOffice.Application.UseCases.AccountReceiv.QueryHandler;
 using AccountingOffice.Application.UseCases.Cia.Queries;
 using AccountingOffice.Application.UseCases.Cia.Queries.Result;
 using AccountingOffice.Application.UseCases.Cia.QueryHandler;
+using AccountingOffice.Application.UseCases.Consolidation.Queries;
+using AccountingOffice.Application.UseCases.Consolidation.Queries.Result;
+using AccountingOffice.Application.UseCases.Consolidation.QueryHandler;
 using AccountingOffice.Application.UseCases.Individual.Queries;
 using AccountingOffice.Application.UseCases.Individual.Queries.Result;
 using AccountingOffice.Application.UseCases.Individual.QueryHandler;
@@ -37,6 +40,9 @@ public static class QueryHandlerExtensions
         
         // IndividualPerson Query Handlers
         services.AddIndividualPersonQueryHandlers();
+        
+        // Consolidation Query Handlers
+        services.AddConsolidationQueryHandlers();
 
         return services;
     }
@@ -87,6 +93,16 @@ public static class QueryHandlerExtensions
         services.AddScoped<IQueryHandler<GetIndividualByIdQuery, Result<IndividualPersonResult?>>, IndividualQueryHandler>();
         services.AddScoped<IQueryHandler<GetIndividualByTenantId, Result<IEnumerable<IndividualPersonResult>>>, IndividualQueryHandler>();
         services.AddScoped<IQueryHandler<GetIndividualByDocument, Result<IndividualPersonResult?>>, IndividualQueryHandler>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registra Query Handlers de Consolidation
+    /// </summary>
+    private static IServiceCollection AddConsolidationQueryHandlers(this IServiceCollection services)
+    {
+        services.AddScoped<IQueryHandler<GetDailyConsolidationQuery, Result<DailyConsolidationResult?>>, DailyConsolidationQueryHandler>();
 
         return services;
     }

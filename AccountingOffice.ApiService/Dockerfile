@@ -7,6 +7,8 @@ ARG FINAL_BASE_IMAGE=${LAUNCHING_FROM_VS:+aotdebug}
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
+# Install wget for healthcheck
+RUN apk add --no-cache wget
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -40,6 +42,8 @@ USER app
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM ${FINAL_BASE_IMAGE:-mcr.microsoft.com/dotnet/runtime-deps:10.0-alpine} AS final
+# Install wget for healthcheck
+RUN apk add --no-cache wget
 WORKDIR /app
 EXPOSE 8080
 COPY --from=publish /app/publish .
