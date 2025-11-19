@@ -7,6 +7,7 @@ using AccountingOffice.Domain.Core.Aggregates;
 using AccountingOffice.Domain.Core.Enums;
 using Bogus;
 using FakeItEasy;
+using Microsoft.Extensions.Logging;
 
 namespace AccountOffice.Tests.Application.Account;
 
@@ -21,6 +22,7 @@ public class AccountPayableCommandHandlerTests
     private readonly IPersonQuery _personQuery;
     private readonly AccountPayableCommandHandler _handler;
     private readonly IApplicationBus _applicationBus;
+    private ILogger<AccountPayableCommandHandler> _logger;
 
     public AccountPayableCommandHandlerTests()
     {
@@ -43,8 +45,9 @@ public class AccountPayableCommandHandlerTests
         _accountPayableQuery = A.Fake<IAccountPayableQuery>();
         _personQuery = A.Fake<IPersonQuery>();
         _applicationBus = A.Fake<IApplicationBus>();
+        _logger = A.Fake<ILogger<AccountPayableCommandHandler>>();
 
-        _handler = new AccountPayableCommandHandler(_accountPayableQuery, _accountPayableRepository, _personQuery, _applicationBus);
+        _handler = new AccountPayableCommandHandler(_accountPayableQuery, _accountPayableRepository, _personQuery, _applicationBus,_logger);
     }
 
     [Fact]
