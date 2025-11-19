@@ -1,3 +1,4 @@
+using AccountingOffice.Domain.Core.Common;
 using AccountingOffice.Domain.Core.Interfaces;
 
 namespace AccountingOffice.Domain.Core.Aggregates;
@@ -8,45 +9,12 @@ namespace AccountingOffice.Domain.Core.Aggregates;
 /// </summary>
 public class User : IMultiTenantEntity<Guid>
 {
-    public User(
-        int id,
-        Guid companyId,
-        string userName,
-        string password)
-    {
-        if (id <= 0)
-            throw new ArgumentException("Id deve ser maior que zero.", nameof(id));
-
-        if (companyId == Guid.Empty)
-            throw new ArgumentException("CompanyId é obrigatório.", nameof(companyId));
-
-        if (string.IsNullOrWhiteSpace(userName))
-            throw new ArgumentException("UserName é obrigatório.", nameof(userName));
-
-        if (string.IsNullOrWhiteSpace(password))
-            throw new ArgumentException("Password é obrigatório.", nameof(password));
-
-        if (userName.Length < 3)
-            throw new ArgumentException("UserName deve ter pelo menos 3 caracteres.", nameof(userName));
-
-        if (password.Length < 6)
-            throw new ArgumentException("Password deve ter pelo menos 6 caracteres.", nameof(password));
-
-        Id = id;
-        TenantId = companyId; // CompanyId é o TenantId
-        UserName = userName.Trim();
-        Password = password; // Em produção, deve ser hash
-        CreatedAt = DateTime.UtcNow;
-        Active = true;
-    }
-
-    protected User() { } // Para ORM
+    #region Propriedades
 
     public int Id { get; protected set; }
-    
+
     /// <summary>
     /// Identificador da empresa à qual o usuário pertence.
-    /// Implementa IMultiTenantEntity para manter consistência com outras entidades.
     /// </summary>
     public Guid TenantId { get; protected set; }
 
@@ -63,32 +31,82 @@ public class User : IMultiTenantEntity<Guid>
     public DateTime CreatedAt { get; protected set; }
     public bool Active { get; private set; }
 
+    #endregion
+
+    #region Construtores
+    private User(
+    Guid companyId,
+    string userName,
+    string password)
+    {
+        TenantId = companyId; // CompanyId é o TenantId
+        UserName = userName.Trim();
+        Password = password; // Em produção, deve ser hash
+        CreatedAt = DateTime.UtcNow;
+        Active = true;
+    }
+
+    protected User() { } // Para ORM
+
+    #endregion
+
+    #region Validação
+    private static DomainResult ValidateCompanyParameters(Guid companyId, string userName, string password)
+    {
+        List<string> errors = new();
+        if (string.IsNullOrWhiteSpace(userName))
+            errors.Add("UserName é obrigatório.");
+
+        if (string.IsNullOrWhiteSpace(password))
+            errors.Add("Senha é obrigatório.");
+
+        if (companyId == Guid.Empty)
+            errors.Add("CompanyId é obrigatório.");
+
+        if (errors.Any())
+        {
+            return DomainResult.Failure(string.Join("|", errors));
+        }
+
+        return DomainResult.Success();
+    }
+    #endregion
+
+    #region Alteração de estado
+    public static DomainResult<User> Create(
+        Guid companyId,
+        string userName,
+        string password)
+    {
+        DomainResult? validationResult = ValidateCompanyParameters(companyId, userName, password);
+        if (validationResult.IsFailure)
+            return DomainResult<User>.Failure(validationResult.Error);
+ 
+        return DomainResult<User>.Success(new User(  companyId, userName, password));
+    }
+
     /// <summary>
     /// Atualiza o nome de usuário.
     /// </summary>
-    public void UpdateUserName(string userName)
+    public DomainResult ChangeUserName(string userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
-            throw new ArgumentException("UserName é obrigatório.", nameof(userName));
-
-        if (userName.Length < 3)
-            throw new ArgumentException("UserName deve ter pelo menos 3 caracteres.", nameof(userName));
-
+            return DomainResult.Failure("UserName é obrigatório.");
         UserName = userName.Trim();
+
+        return DomainResult.Success();
     }
 
     /// <summary>
     /// Atualiza a senha do usuário.
     /// </summary>
-    public void UpdatePassword(string password)
+    public DomainResult ChangePassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))
-            throw new ArgumentException("Password é obrigatório.", nameof(password));
+            DomainResult.Failure("Password é obrigatório.");
 
-        if (password.Length < 6)
-            throw new ArgumentException("Password deve ter pelo menos 6 caracteres.", nameof(password));
-
-        Password = password; // Em produção, deve ser hash
+        Password = password;
+        return DomainResult.Success();
     }
 
     /// <summary>
@@ -100,5 +118,6 @@ public class User : IMultiTenantEntity<Guid>
     /// Desativa o usuário.
     /// </summary>
     public void Deactivate() => Active = false;
+    #endregion
 }
 

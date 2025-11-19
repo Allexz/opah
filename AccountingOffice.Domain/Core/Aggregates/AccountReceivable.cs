@@ -1,12 +1,19 @@
-﻿using AccountingOffice.Domain.Core.Enums;
-using AccountingOffice.Domain.Core.ValueObjects;
+﻿using AccountingOffice.Domain.Core.Common;
+using AccountingOffice.Domain.Core.Enums;
 
 namespace AccountingOffice.Domain.Core.Aggregates;
 
 public class AccountReceivable : Account<Guid>
 {
+    #region Propriedades
+   
+    public string InvoiceNumber { get; private set; } 
+    public DateTime? ReceivedDate { get; private set; }
+    
+    #endregion
 
-    public AccountReceivable(
+    #region Construtores
+    private AccountReceivable(
         Guid id,
         Guid tenantId,
         string description,
@@ -20,40 +27,81 @@ public class AccountReceivable : Account<Guid>
         DateTime? receivedDate = null)
         : base(id, tenantId, description, ammount, issueDate, dueDate, status, customer)
     {
-        if (string.IsNullOrWhiteSpace(invoiceNumber))
-            throw new ArgumentException("Identificador da parcela não pode ser vazio.", nameof(invoiceNumber));
-
-        if (receivedDate.HasValue && status != AccountStatus.Received)
-            throw new ArgumentException("Data de recebimento só pode ser preenchida junto com status de recebida.", nameof(receivedDate));
-
-        if (receivedDate.HasValue && receivedDate.Value > DateTime.Now)
-            throw new ArgumentException("Data de recebimento não pode ser marcada para o futuro.", nameof(receivedDate));
-
         PayMethod = payMethod;
         InvoiceNumber = invoiceNumber;
         ReceivedDate = receivedDate;
     }
 
-    public PaymentMethod PayMethod { get; private set; }
-    public string InvoiceNumber { get; private set; } = string.Empty;
-    public DateTime? ReceivedDate { get; private set; }
+    private AccountReceivable() { }
 
-    private List<Installment> _installments = new();
-    public IReadOnlyCollection<Installment> Installments => _installments.AsReadOnly();
-    public void AddInstallment(Installment installment)
+    #endregion
+
+    #region Validação
+    private static DomainResult ValidateReceivableParameters(DateTime? receivedDate, AccountStatus status, string invoiceNumber )
     {
-        if (installment == null)
-            throw new ArgumentNullException(nameof(installment));
+        List<string> errors = new();
+ 
+        if (string.IsNullOrWhiteSpace(invoiceNumber))
+            errors.Add("Identificador da parcela não pode ser vazio.");
 
-        if (_installments.Any(i => i.InstallmentNumber == installment.InstallmentNumber))
-            throw new ArgumentException($"Parcela com identificador {installment.InstallmentNumber} já existe.", nameof(installment));
+        if (receivedDate.HasValue && status != AccountStatus.Received)
+            errors.Add("Data de recebimento só pode ser preenchida junto com status de recebida.");
 
-        if (installment.DueDate < IssueDate)
-            throw new ArgumentException("Data de vencimento não pode ser maior que data de emissão.", nameof(installment));
+        if (receivedDate.HasValue && receivedDate.Value > DateTime.Now)
+            errors.Add("Data de recebimento não pode ser marcada para o futuro.");
 
-        if (installment.DueDate > DueDate)
-            throw new ArgumentException("Vencimento da parcela não pode ser maior que o vencimento da conta principal", nameof(installment));
+        if (errors.Any())
+            return DomainResult.Failure(string.Join("|", errors));
 
-        _installments.Add(installment);
+        return DomainResult.Success();
     }
+    #endregion
+
+    #region Alterações de estado
+    public static DomainResult<AccountReceivable>  Create(
+        Guid id,
+        Guid tenantId,
+        string description,
+        decimal ammount,
+        DateTime dueDate,
+        DateTime issueDate,
+        AccountStatus status,
+        Person<Guid> customer,
+        PaymentMethod payMethod,
+        string invoiceNumber,
+        DateTime? receivedDate = null)
+    {
+        
+        DomainResult? baseValidationResult = ValidateAccountParameters(tenantId,
+                                                         description,
+                                                         ammount,
+                                                         issueDate,
+                                                         dueDate,
+                                                         status,
+                                                         customer);
+        if (baseValidationResult.IsFailure)
+            return DomainResult<AccountReceivable>.Failure(baseValidationResult.Error);
+
+        baseValidationResult = ValidateReceivableParameters(receivedDate, status, invoiceNumber);
+
+        if (baseValidationResult.IsFailure)
+            return DomainResult<AccountReceivable>.Failure(baseValidationResult.Error);
+
+        return DomainResult<AccountReceivable>.Success ( new AccountReceivable(
+            id,
+            tenantId,
+            description,
+            ammount,
+            dueDate,
+            issueDate,
+            status,
+            customer,
+            payMethod,
+            invoiceNumber,
+            receivedDate));
+    }
+
+    #endregion
+
+
 }

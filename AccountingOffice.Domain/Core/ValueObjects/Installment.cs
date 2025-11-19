@@ -1,25 +1,39 @@
+using AccountingOffice.Domain.Core.Common;
 using AccountingOffice.Domain.Core.Enums;
 
 namespace AccountingOffice.Domain.Core.ValueObjects;
 
 public class Installment
 {
-    public Installment(
-        int installmentNumber,
-        decimal amount,
-        DateTime dueDate,
-        AccountStatus status,
-        DateTime? paymentDate = null)
+
+    #region Propriedades
+    public int InstallmentNumber { get; private set; }
+    public decimal Amount { get; private set; }
+    public DateTime DueDate { get; private set; }
+    public AccountStatus Status { get; private set; }
+    public DateTime? PaymentDate { get; private set; }
+    public EntryType Entrytype { get; private set; }
+    public bool IsPaid => Status == AccountStatus.Paid || Status == AccountStatus.Received;
+    public bool IsOverdue => !IsPaid && DueDate < DateTime.Now.Date;
+
+    #endregion
+
+    #region Construtores
+    /// <summary>
+    /// Construtor privado para inicialização de uma nova parcela.
+    /// </summary>
+    /// <param name="installmentNumber"></param>
+    /// <param name="amount"></param>
+    /// <param name="dueDate"></param>
+    /// <param name="status"></param>
+    /// <param name="paymentDate"></param>
+    private Installment(
+       int installmentNumber,
+       decimal amount,
+       DateTime dueDate,
+       AccountStatus status,
+       DateTime? paymentDate = null)
     {
-        if (installmentNumber <= 0)
-            throw new ArgumentException("Installment number must be greater than zero.", nameof(installmentNumber));
-
-        if (amount <= 0)
-            throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
-
-        if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
-            throw new ArgumentException("Payment date cannot be in the future.", nameof(paymentDate));
-
         InstallmentNumber = installmentNumber;
         Amount = amount;
         DueDate = dueDate;
@@ -27,15 +41,106 @@ public class Installment
         PaymentDate = paymentDate;
     }
 
-    public int InstallmentNumber { get; private set; }
-    public decimal Amount { get; private set; }
-    public DateTime DueDate { get; private set; }
-    public AccountStatus Status { get; private set; }
-    public DateTime? PaymentDate { get; private set; }
+    /// <summary>
+    /// Inicializador protegido para ORM.
+    /// </summary>
+    private Installment() { }
+    #endregion
 
-    public bool IsPaid => Status == AccountStatus.Paid || Status == AccountStatus.Received;
-    public bool IsOverdue => !IsPaid && DueDate < DateTime.Now.Date;
+    #region Validação
+    /// <summary>
+    /// Validação dos parâmetros para criação de uma nova parcela.
+    /// </summary>
+    /// <param name="installmentNumber"></param>
+    /// <param name="amount"></param>
+    /// <param name="dueDate"></param>
+    /// <param name="status"></param>
+    /// <param name="paymentDate"></param>
+    /// <returns></returns>
+    private static DomainResult ValidationCreationParameters(int installmentNumber,
+        decimal amount,
+        DateTime dueDate,
+        AccountStatus status,
+        EntryType entryType,
+        DateTime? paymentDate = null)
+    {
+        List<string> errors = new();
+        if (!Enum.IsDefined(typeof(EntryType), entryType))
+            errors.Add("Tipo de lançamento inválido.");
 
+        if (installmentNumber <= 0)
+            errors.Add("Número de parcela precisa ser maior que zero.");
+
+        if (amount <= 0)
+            errors.Add("O valor precisa ser maior que zero.");
+
+        if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
+            errors.Add("Data de pagamento não pode ser no futuro.");
+
+        if (errors.Any())
+            return DomainResult.Failure(string.Join("; ", errors));
+
+        return DomainResult.Success();
+    }
+    #endregion
+
+    #region Alteração de Estado
+
+    /// <summary>
+    /// Fábrica para criação de uma nova parcela com validação dos parâmetros.
+    /// </summary>
+    /// <param name="installmentNumber"></param>
+    /// <param name="amount"></param>
+    /// <param name="dueDate"></param>
+    /// <param name="status"></param>
+    /// <param name="entryType"></param>
+    /// <param name="paymentDate"></param>
+    /// <returns></returns>
+    public static DomainResult<Installment> Create(int installmentNumber,
+                                             decimal amount,
+                                             DateTime dueDate,
+                                             AccountStatus status,
+                                             EntryType entryType,
+                                             DateTime? paymentDate = null)
+    {
+        DomainResult validationResult = ValidationCreationParameters(installmentNumber,
+                                                            amount,
+                                                            dueDate,
+                                                            status,
+                                                            entryType,
+                                                            paymentDate);
+        if (validationResult.IsFailure)
+            return DomainResult<Installment>.Failure(validationResult.Error);
+
+        Installment installment = new Installment(installmentNumber,
+                                                  amount,
+                                                  dueDate,
+                                                  status,
+                                                  paymentDate);
+
+        return DomainResult<Installment>.Success(installment);
+
+    }
+    /// <summary>
+    /// Altera o status da parcela, com validação do pagamento.
+    /// </summary>
+    /// <param name="newStatus"></param>
+    /// <param name="paymentDate"></param>
+    /// <returns></returns>
+    public DomainResult ChangeStatus(AccountStatus newStatus, DateTime? paymentDate = null)
+    {
+        if (paymentDate.HasValue && paymentDate.Value > DateTime.Now)
+            return DomainResult.Failure("Data de pagamento não pode  ser no futuro.");
+
+        Status = newStatus;
+        PaymentDate = paymentDate;
+
+        return DomainResult.Success();
+    }
+
+    #endregion
+
+    #region Implementação de Equals e GetHashCode
     public override bool Equals(object? obj)
     {
         if (obj is not Installment other)
@@ -68,5 +173,7 @@ public class Installment
     {
         return !(left == right);
     }
+
+    #endregion
 }
 
