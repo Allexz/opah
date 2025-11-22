@@ -3,18 +3,9 @@
 Sistema de gestão contábil para escritórios contábeis - desenvolvido como prova prática para a Opah.  
 **Requisitos não funcionais**  
 Um comerciante precisa controlar o seu fluxo de caixa diário com os lançamentos(débitos e créditos), também precisa de um relatório que disponibilize o saldo diário consolidado.  
-Foi utilizada containerização (DOCKER) para a aplicação, e .NET 10, ainda não temos a versão oficial no DOCKERHUB, portanto utilizei a versão nightly.
-
-## Utilização  
-
-### RabbitMQ -  
-http://localhost:15672  
-usuário: guest  
-senha: guest  
-
-## AccountingOffice.Api  
-http://localhost:5088/swagger  
-O recurso MIGRATIONS cria em sua execução:  
+Foi utilizada containerização (DOCKER) para a aplicação, e .NET 10, ainda não temos a versão oficial no DOCKERHUB, portanto utilizei a versão nightly.  
+Para execução, comand: docker-compose up --build  
+O recurso MIGRATIONS criará em sua execução os dados abaixo - a título de informação pois a autenticação não foi implementada.  
 
 Company  
 Document: 48.245.009/0001-99  
@@ -26,6 +17,17 @@ User
 CompanyId: O Id da empresa acima  
 UserName: Alexandre  
 Password: Abcd1234****  
+
+
+## Utilização  
+
+### RabbitMQ -  
+http://localhost:15672  
+usuário: guest  
+senha: guest  
+
+## AccountingOffice.Api  
+http://localhost:5088/swagger  
 
   ### Próximos passos  
 
@@ -85,7 +87,7 @@ Password: Abcd1234****
 ## 🐳 Docker
 
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 ## 📦 Variáveis de Ambiente
