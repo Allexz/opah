@@ -79,7 +79,7 @@ http://localhost:5088/swagger
 
 - Gestão de contas a pagar e receber
 - Controle de parcelas e pagamentos
-- Cadastro de pessoas físicas e jurídicas (a desenvolver)
+- Cadastro de pessoas físicas e jurídicas 
 - Multi-tenant (múltiplos escritórios)
 - Event sourcing com RabbitMQ 
 - Logging centralizado com Serilog/Elasticsearch (a desenvolver)
