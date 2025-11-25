@@ -4,7 +4,7 @@ Sistema de gestão contábil para escritórios contábeis - desenvolvido como pr
 **Requisitos não funcionais**  
 Um comerciante precisa controlar o seu fluxo de caixa diário com os lançamentos(débitos e créditos), também precisa de um relatório que disponibilize o saldo diário consolidado.  
 Foi utilizada containerização (DOCKER) para a aplicação, e .NET 10, ainda não temos a versão oficial no DOCKERHUB, portanto utilizei a versão nightly.  
-Para execução, comand: docker-compose up --build  
+Para execução, comande: docker-compose up --build  
 O recurso MIGRATIONS criará em sua execução os dados abaixo - a título de informação pois a autenticação não foi implementada.  
 
 Company  
